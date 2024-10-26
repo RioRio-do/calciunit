@@ -7,8 +7,8 @@ import 'package:go_router/go_router.dart';
 
 // Project imports:
 import 'package:calciunit/logic/data.dart';
-import 'package:calciunit/menu_page.dart';
-import 'package:calciunit/dynamic_page.dart';
+import 'package:calciunit/page/menu_page.dart';
+import 'package:calciunit/page/dynamic_page.dart';
 import 'package:calciunit/app_route.dart';
 
 List<GoRoute> generateRoutes(int count) {
