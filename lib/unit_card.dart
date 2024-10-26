@@ -5,14 +5,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class UnitCard extends HookWidget {
   final String title;
-  final String subtitle;
   final String leadingText;
   final String initialCount;
 
   const UnitCard({
     super.key,
     required this.title,
-    required this.subtitle,
     required this.leadingText,
     required this.initialCount,
   });
