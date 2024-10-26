@@ -1,0 +1,63 @@
+name: calciunit
+description: "A new Flutter project."
+
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
+
+# of the product and file versions while build-number is used as the build suffix.
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.3
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+  flutter_screenutil: ^5.9.3
+  shared_preferences: ^2.3.2
+  rational: ^2.2.3
+  intl: any
+  flutter_localizations:
+    sdk: flutter
+  flutter_hooks: ^0.20.5
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+  decimal: ^3.0.2
+  hooks_riverpod: ^2.5.2
+  path_provider: ^2.1.4
+  path: ^1.9.0
+  go_router: ^14.3.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  import_sorter: ^4.6.0
+
+  flutter_lints: ^4.0.0
+  build_runner: ^2.4.12
+  riverpod_generator: ^2.4.3
+
+flutter:
+  fonts:
+    - family: Murecho
+      fonts:
+        - asset: assets/fonts/Murecho/static/Murecho-Thin.ttf
+          weight: 100
+        - asset: assets/fonts/Murecho/static/Murecho-ExtraLight.ttf
+          weight: 200
+        - asset: assets/fonts/Murecho/static/Murecho-Light.ttf
+          weight: 300
+        - asset: assets/fonts/Murecho/static/Murecho-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Murecho/static/Murecho-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Murecho/static/Murecho-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Murecho/static/Murecho-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Murecho/static/Murecho-ExtraBold.ttf
+          weight: 800
+        - asset: assets/fonts/Murecho/static/Murecho-Black.ttf
+          weight: 900
+  uses-material-design: true
