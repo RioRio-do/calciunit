@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:calciunit/page/setting_page.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -34,6 +35,13 @@ final goRouterProvider = Provider<GoRouter>(
           name: AppRoute.menu.name,
           builder: (BuildContext context, GoRouterState state) {
             return const MenuPage();
+          },
+        ),
+        GoRoute(
+          path: AppRoute.config.path,
+          name: AppRoute.config.name,
+          builder: (BuildContext context, GoRouterState state) {
+            return const SettingPage();
           },
         ),
         ...generateRoutes(Units.values.length)
