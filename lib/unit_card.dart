@@ -3,13 +3,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-class RoundedListTile extends HookWidget {
+class UnitCard extends HookWidget {
   final String title;
   final String subtitle;
   final String leadingText;
   final String initialCount;
 
-  const RoundedListTile({
+  const UnitCard({
     super.key,
     required this.title,
     required this.subtitle,
