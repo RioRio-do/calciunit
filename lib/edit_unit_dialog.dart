@@ -1,8 +1,14 @@
+import 'package:calciunit/input_value_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-AlertDialog editUnitDialog(TextEditingController controller,
-    FocusNode focusNode, BuildContext context, ValueNotifier<String> count) {
+AlertDialog editUnitDialog(
+    TextEditingController controller,
+    FocusNode focusNode,
+    BuildContext context,
+    ValueNotifier<String> count,
+    WidgetRef ref) {
   return AlertDialog(
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(0),
@@ -31,6 +37,7 @@ AlertDialog editUnitDialog(TextEditingController controller,
               onPressed: () {
                 String? newValue = controller.text;
                 count.value = newValue;
+                ref.read(inputValueProvider.notifier).set(newValue);
                 Navigator.of(context).pop();
               },
               child: const Text('保存'),

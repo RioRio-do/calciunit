@@ -1,23 +1,33 @@
 import 'package:calciunit/edit_unit_dialog.dart';
+import 'package:calciunit/input_value_state.dart';
+import 'package:calciunit/logic/units_cov.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-class UnitCard extends HookWidget {
+class UnitCard extends HookConsumerWidget {
   final String title;
   final String leadingText;
-  final String initialCount;
+  final String constanceValue;
+  final String scaleOnInfinitePrecision;
 
   const UnitCard({
     super.key,
     required this.title,
     required this.leadingText,
-    required this.initialCount,
+    required this.constanceValue,
+    required this.scaleOnInfinitePrecision,
   });
 
   @override
-  Widget build(BuildContext context) {
-    final count = useState(initialCount);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final input = ref.watch(inputValueProvider);
+    final count = useState(unitCov(
+        fromS: '1',
+        toS: constanceValue,
+        valueS: input,
+        scaleOnInfinitePrecisionS: scaleOnInfinitePrecision));
 
     Future<void> showEditDialog(BuildContext context) async {
       final TextEditingController controller = TextEditingController(
@@ -33,7 +43,7 @@ class UnitCard extends HookWidget {
         context: context,
         barrierDismissible: false,
         builder: (BuildContext context) {
-          return editUnitDialog(controller, focusNode, context, count);
+          return editUnitDialog(controller, focusNode, context, count, ref);
         },
       ).then((_) {
         focusNode.dispose();

@@ -36,20 +36,27 @@ class DynamicPage extends HookConsumerWidget {
                 index: index,
                 child: Material(
                   child: UnitCard(
-                      title: unit.data[items.value[index]]
-                          [UnitsColumn.displayName.v],
-                      leadingText: '?',
-                      initialCount: (Decimal.tryParse(
-                                  unit.data[items.value[index]]
-                                      [UnitsColumn.constant.v]) ??
-                              Rational(
-                                      BigInt.parse(unit.data[items.value[index]]
-                                              [UnitsColumn.constant.v]
-                                          .split('/')
-                                          .first),
-                                      BigInt.parse(unit.data[items.value[index]][UnitsColumn.constant.v].split('/').last))
-                                  .toDecimal(scaleOnInfinitePrecision: int.tryParse(config.scaleOnInfinitePrecision)))
-                          .toString()),
+                    title: unit.data[items.value[index]]
+                        [UnitsColumn.displayName.v],
+                    leadingText: '?',
+                    constanceValue: (Decimal.tryParse(
+                                unit.data[items.value[index]]
+                                    [UnitsColumn.constant.v]) ??
+                            Rational(
+                                    BigInt.parse(unit.data[items.value[index]]
+                                            [UnitsColumn.constant.v]
+                                        .split('/')
+                                        .first),
+                                    BigInt.parse(unit.data[items.value[index]]
+                                            [UnitsColumn.constant.v]
+                                        .split('/')
+                                        .last))
+                                .toDecimal(
+                                    scaleOnInfinitePrecision:
+                                        int.tryParse(config.scaleOnInfinitePrecision)))
+                        .toString()[UnitsColumn.constant.v],
+                    scaleOnInfinitePrecision: config.scaleOnInfinitePrecision,
+                  ),
                 ),
               );
             },

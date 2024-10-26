@@ -6,7 +6,7 @@ part of 'input_value_state.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$inputValueHash() => r'72e32d17556f104c71a35e189994443e1c45d619';
+String _$inputValueHash() => r'3411f62e9f2260a30e5eaf5d7d3e1d0b09a008a6';
 
 /// See also [InputValue].
 @ProviderFor(InputValue)
