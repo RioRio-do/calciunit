@@ -1,10 +1,12 @@
 import 'package:calciunit/logic/data.dart';
+import 'package:calciunit/sav/model_configuration_notifier.dart';
 import 'package:calciunit/unit_card.dart';
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:rational/rational.dart';
 
 class DynamicPage extends HookConsumerWidget {
   const DynamicPage({super.key, required this.pageId});
@@ -16,6 +18,7 @@ class DynamicPage extends HookConsumerWidget {
     final unit = Units.values[pageId];
     final items = useState<List<int>>([0, 1]);
     final scrollController = useScrollController();
+    final config = ref.watch(modelConfigurationNotifierProvider);
 
     return Scaffold(
       body: CustomScrollView(
@@ -33,13 +36,20 @@ class DynamicPage extends HookConsumerWidget {
                 index: index,
                 child: Material(
                   child: UnitCard(
-                    title: unit.data[items.value[index]]
-                        [UnitsColumn.displayName.v],
-                    leadingText: '?',
-                    initialCount: Decimal.parse(unit.data[items.value[index]]
-                            [UnitsColumn.constant.v])
-                        .toString(),
-                  ),
+                      title: unit.data[items.value[index]]
+                          [UnitsColumn.displayName.v],
+                      leadingText: '?',
+                      initialCount: (Decimal.tryParse(
+                                  unit.data[items.value[index]]
+                                      [UnitsColumn.constant.v]) ??
+                              Rational(
+                                      BigInt.parse(unit.data[items.value[index]]
+                                              [UnitsColumn.constant.v]
+                                          .split('/')
+                                          .first),
+                                      BigInt.parse(unit.data[items.value[index]][UnitsColumn.constant.v].split('/').last))
+                                  .toDecimal(scaleOnInfinitePrecision: int.tryParse(config.scaleOnInfinitePrecision)))
+                          .toString()),
                 ),
               );
             },
