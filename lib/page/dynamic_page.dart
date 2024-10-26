@@ -1,4 +1,5 @@
 import 'package:calciunit/logic/data.dart';
+import 'package:calciunit/unit_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -30,9 +31,12 @@ class DynamicPage extends HookConsumerWidget {
                 key: ValueKey(items.value[index]),
                 index: index,
                 child: Material(
-                  child: ListTile(
-                    title: Text(unit.data[items.value[index]]
-                        [UnitsColumn.displayName.v]),
+                  child: UnitCard(
+                    title: unit.data[items.value[index]]
+                        [UnitsColumn.displayName.v],
+                    leadingText: '?',
+                    initialCount: unit.data[items.value[index]]
+                        [UnitsColumn.constant.v],
                   ),
                 ),
               );
