@@ -37,7 +37,7 @@ class UnitCard extends HookWidget {
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(hintText: '新しい数値を入力'),
               focusNode: focusNode,
-              autofocus: true, //! 変更
+              autofocus: true,
             ),
             actions: <Widget>[
               TextButton(
