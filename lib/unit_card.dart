@@ -24,6 +24,10 @@ class UnitCard extends HookWidget {
         text: count.value.toString(),
       );
       FocusNode focusNode = FocusNode();
+      controller.selection = TextSelection(
+        baseOffset: 0,
+        extentOffset: controller.text.length,
+      );
 
       return showDialog<void>(
         context: context,
