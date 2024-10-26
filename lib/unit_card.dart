@@ -56,6 +56,16 @@ class UnitCard extends HookWidget {
                 },
                 child: const Text('保存'),
               ),
+              TextButton(
+                onPressed: () {
+                  Clipboard.setData(
+                      ClipboardData(text: count.value.toString()));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('数値がクリップボードにコピーされました')),
+                  );
+                },
+                child: const Text('コピー'),
+              )
             ],
           );
         },
@@ -72,12 +82,6 @@ class UnitCard extends HookWidget {
         color: Colors.white,
         child: InkWell(
           borderRadius: BorderRadius.circular(12.w),
-          onLongPress: () {
-            Clipboard.setData(ClipboardData(text: count.value.toString()));
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('数値がクリップボードにコピーされました')),
-            );
-          },
           onTap: () {
             showEditDialog(context);
           },
