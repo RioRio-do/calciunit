@@ -1,10 +1,9 @@
-import '../logic/data.dart';
-import '../sav/model_configuration_notifier.dart';
-import '../unit_card.dart';
+import 'package:calciunit/logic/data.dart';
+import 'package:calciunit/sav/model_configuration_notifier.dart';
+import 'package:calciunit/unit_card.dart';
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:rational/rational.dart';
 
@@ -16,7 +15,8 @@ class DynamicPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final unit = Units.values[pageId];
-    final items = useState<List<int>>([0, 1]);
+    final items =
+        useState<List<int>>(List.generate(unit.data.length, (index) => index));
     final scrollController = useScrollController();
     final config = ref.watch(modelConfigurationNotifierProvider);
 
@@ -31,6 +31,9 @@ class DynamicPage extends HookConsumerWidget {
           ),
           SliverReorderableList(
             itemBuilder: (BuildContext context, int index) {
+              if (index >= items.value.length) {
+                return Center(child: Text('Invalid index: $index'));
+              }
               return ReorderableDelayedDragStartListener(
                 key: ValueKey(items.value[index]),
                 index: index,
@@ -65,23 +68,9 @@ class DynamicPage extends HookConsumerWidget {
               if (oldIndex < newIndex) {
                 newIndex -= 1;
               }
-              final int item = items.value.removeAt(oldIndex);
+              final item = items.value.removeAt(oldIndex);
               items.value.insert(newIndex, item);
             },
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.all(8.w),
-              child: SizedBox(
-                width: 18.w,
-                child: ElevatedButton(
-                  onPressed: () {
-                    items.value = [...items.value, items.value.length];
-                  },
-                  child: const Text('追加'),
-                ),
-              ),
-            ),
           ),
         ],
       ),
