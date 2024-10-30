@@ -1,4 +1,4 @@
-import 'package:calciunit/sav/model_configuration.dart';
+import 'model_configuration.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 

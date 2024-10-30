@@ -1,6 +1,5 @@
-import 'package:calciunit/edit_unit_dialog.dart';
-import 'package:calciunit/input_value_state.dart';
-import 'package:calciunit/logic/units_cov.dart';
+import 'input_value_state.dart';
+import 'logic/units_cov.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -91,7 +90,6 @@ class UnitCard extends HookConsumerWidget {
               ],
             ),
           );
-          return editUnitDialog(controller, focusNode, context, count, ref);
         },
       ).then((_) {
         focusNode.dispose();

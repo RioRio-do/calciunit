@@ -1,5 +1,5 @@
 // Flutter imports:
-import 'package:calciunit/page/setting_page.dart';
+import 'page/setting_page.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -7,10 +7,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 // Project imports:
-import 'package:calciunit/logic/data.dart';
-import 'package:calciunit/page/menu_page.dart';
-import 'package:calciunit/page/dynamic_page.dart';
-import 'package:calciunit/app_route.dart';
+import 'logic/data.dart';
+import 'page/menu_page.dart';
+import 'page/dynamic_page.dart';
+import 'app_route.dart';
 
 List<GoRoute> generateRoutes(int count) {
   return List.generate(
