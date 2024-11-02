@@ -1,9 +1,7 @@
-import '../app_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import '../sav/model_configuration_notifier.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class SettingPage extends HookConsumerWidget {
@@ -25,11 +23,6 @@ class SettingPage extends HookConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('設定'),
-        leading: IconButton(
-            onPressed: () {
-              GoRouter.of(context).go(AppRoute.menu.path);
-            },
-            icon: const Icon(Icons.home)),
       ),
       body: Padding(
         padding: EdgeInsets.all(16.w),
@@ -41,6 +34,7 @@ class SettingPage extends HookConsumerWidget {
               onChanged: (value) {
                 configNotifier.updateScaleOnInfinitePrecision(value);
               },
+              keyboardType: TextInputType.number,
             ),
             SizedBox(height: 20.h),
             ElevatedButton(

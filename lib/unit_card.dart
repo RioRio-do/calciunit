@@ -23,7 +23,7 @@ class UnitCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final input = ref.watch(inputValueProvider);
 
-    Future<void> showEditDialog(BuildContext context) async {
+    Future<void> editDialog(BuildContext context) async {
       final TextEditingController controller = TextEditingController(
         text: unitCov(
             fromS: '1',
@@ -62,6 +62,21 @@ class UnitCard extends ConsumerWidget {
                     children: <Widget>[
                       TextButton(
                         onPressed: () {
+                          Clipboard.setData(ClipboardData(
+                              text: unitCov(
+                                  fromS: '1',
+                                  toS: constanceValue,
+                                  valueS: input,
+                                  scaleOnInfinitePrecisionS:
+                                      scaleOnInfinitePrecision)));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('クリップボードにコピーされました')),
+                          );
+                        },
+                        child: const Text('コピー'),
+                      ),
+                      TextButton(
+                        onPressed: () {
                           Navigator.of(context).pop();
                         },
                         child: const Text('キャンセル'),
@@ -79,21 +94,6 @@ class UnitCard extends ConsumerWidget {
                         },
                         child: const Text('保存'),
                       ),
-                      TextButton(
-                        onPressed: () {
-                          Clipboard.setData(ClipboardData(
-                              text: unitCov(
-                                  fromS: '1',
-                                  toS: constanceValue,
-                                  valueS: input,
-                                  scaleOnInfinitePrecisionS:
-                                      scaleOnInfinitePrecision)));
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('クリップボードにコピーされました')),
-                          );
-                        },
-                        child: const Text('コピー'),
-                      )
                     ],
                   )
                 ],
@@ -115,7 +115,7 @@ class UnitCard extends ConsumerWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(12.w),
           onTap: () {
-            showEditDialog(context);
+            editDialog(context);
           },
           child: ListTile(
             contentPadding: EdgeInsets.symmetric(horizontal: 16.w),
