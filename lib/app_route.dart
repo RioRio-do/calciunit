@@ -1,5 +1,6 @@
 enum AppRoute {
   menu,
+  config,
 }
 
 extension AppRouteX on AppRoute {
@@ -7,6 +8,8 @@ extension AppRouteX on AppRoute {
     switch (this) {
       case AppRoute.menu:
         return '/';
+      case AppRoute.config:
+        return '/config';
     }
   }
 
@@ -14,6 +17,8 @@ extension AppRouteX on AppRoute {
     switch (this) {
       case AppRoute.menu:
         return 'menu';
+      case AppRoute.config:
+        return 'config';
     }
   }
 }

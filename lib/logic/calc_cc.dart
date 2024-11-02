@@ -1,4 +1,4 @@
-import 'package:rational/rational.dart';
+import 'package:decimal/decimal.dart';
 
 enum SIPrefix {
   Q, // quetta
@@ -85,15 +85,18 @@ extension SIPrefixExtension on SIPrefix {
 }
 
 String convertFromSI(String number, SIPrefix prefix) {
-  Rational num = Rational.parse(number);
-  Rational factor = Rational.parse(prefix.value);
-  Rational result = num * factor;
+  Decimal num = Decimal.parse(number);
+  Decimal factor = Decimal.parse(prefix.value);
+  Decimal result = num * factor;
   return result.toString();
 }
 
-String convertToSI(String number, SIPrefix prefix) {
-  Rational num = Rational.parse(number);
-  Rational factor = Rational.parse(prefix.value);
-  Rational result = num / factor;
+String convertToSI(
+    String number, SIPrefix prefix, String scaleOnInfinitePrecisionS) {
+  Decimal num = Decimal.parse(number);
+  Decimal factor = Decimal.parse(prefix.value);
+  Decimal result = (num / factor).toDecimal(
+    scaleOnInfinitePrecision: int.tryParse(scaleOnInfinitePrecisionS),
+  );
   return result.toString();
 }
