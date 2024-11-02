@@ -17,10 +17,17 @@ class DynamicPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final unit = Units.values[pageId];
     final items = useState<List<int>>([]);
+    final isEdit = useState(false);
     final scrollController = useScrollController();
     final config = ref.watch(modelConfigurationNotifierProvider);
 
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          isEdit.value = !isEdit.value;
+        },
+        child: Icon(isEdit.value ? Icons.done : Icons.edit),
+      ),
       body: CustomScrollView(
         controller: scrollController,
         slivers: [
@@ -29,67 +36,49 @@ class DynamicPage extends HookConsumerWidget {
             floating: true,
             snap: true,
           ),
-          items.value.isNotEmpty
-              ? SliverReorderableList(
-                  itemBuilder: (BuildContext context, int index) {
-                    if (index >= items.value.length) {
-                      return Center(child: Text('Invalid index: $index'));
-                    }
-                    return ReorderableDelayedDragStartListener(
-                      key: ValueKey(items.value[index]),
-                      index: index,
-                      child: Material(
-                        child: UnitCard(
-                          title: unit.data[items.value[index]]
-                              [UnitsColumn.displayName.v],
-                          leadingText: '?',
-                          constanceValue: (Decimal.tryParse(unit.data[items.value[index]][UnitsColumn.constant.v]) ??
-                                  Rational(
-                                          BigInt.parse(unit
-                                              .data[items.value[index]]
-                                                  [UnitsColumn.constant.v]
-                                              .split('/')
-                                              .first),
-                                          BigInt.parse(unit
-                                              .data[items.value[index]]
-                                                  [UnitsColumn.constant.v]
-                                              .split('/')
-                                              .last))
-                                      .toDecimal(
-                                          scaleOnInfinitePrecision: int.tryParse(
-                                              config.scaleOnInfinitePrecision)))
-                              .toString(),
-                          scaleOnInfinitePrecision:
-                              config.scaleOnInfinitePrecision,
-                        ),
-                      ),
-                    );
-                  },
-                  itemCount: items.value.length,
-                  onReorder: (int oldIndex, int newIndex) {
-                    if (oldIndex < newIndex) {
-                      newIndex -= 1;
-                    }
-                    final item = items.value.removeAt(oldIndex);
-                    items.value.insert(newIndex, item);
-                  },
-                )
-              : SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: Center(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        if (unit.data.isNotEmpty) {
-                          items.value = [...items.value, 0];
-                        }
-                      },
-                      child: Text(
-                        'Add Item',
-                        style: TextStyle(fontSize: 16.sp),
-                      ),
-                    ),
+          SliverReorderableList(
+            itemBuilder: (BuildContext context, int index) {
+              if (index >= items.value.length) {
+                return Center(child: Text('Invalid index: $index'));
+              }
+              return ReorderableDelayedDragStartListener(
+                key: ValueKey(items.value[index]),
+                index: index,
+                child: Material(
+                  child: UnitCard(
+                    title: unit.data[items.value[index]]
+                        [UnitsColumn.displayName.v],
+                    leadingText: '?',
+                    constanceValue: (Decimal.tryParse(
+                                unit.data[items.value[index]]
+                                    [UnitsColumn.constant.v]) ??
+                            Rational(
+                                    BigInt.parse(unit.data[items.value[index]]
+                                            [UnitsColumn.constant.v]
+                                        .split('/')
+                                        .first),
+                                    BigInt.parse(unit.data[items.value[index]]
+                                            [UnitsColumn.constant.v]
+                                        .split('/')
+                                        .last))
+                                .toDecimal(
+                                    scaleOnInfinitePrecision:
+                                        int.tryParse(config.scaleOnInfinitePrecision)))
+                        .toString(),
+                    scaleOnInfinitePrecision: config.scaleOnInfinitePrecision,
                   ),
-                )
+                ),
+              );
+            },
+            itemCount: items.value.length,
+            onReorder: (int oldIndex, int newIndex) {
+              if (oldIndex < newIndex) {
+                newIndex -= 1;
+              }
+              final item = items.value.removeAt(oldIndex);
+              items.value.insert(newIndex, item);
+            },
+          ),
         ],
       ),
     );
