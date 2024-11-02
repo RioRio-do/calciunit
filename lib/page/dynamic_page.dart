@@ -57,7 +57,7 @@ class DynamicPage extends HookConsumerWidget {
                                 .toDecimal(
                                     scaleOnInfinitePrecision:
                                         int.tryParse(config.scaleOnInfinitePrecision)))
-                        .toString()[UnitsColumn.constant.v],
+                        .toString(),
                     scaleOnInfinitePrecision: config.scaleOnInfinitePrecision,
                   ),
                 ),
