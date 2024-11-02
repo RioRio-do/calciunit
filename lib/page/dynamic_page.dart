@@ -8,6 +8,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:rational/rational.dart';
+import 'package:calciunit/deck_list_dialog.dart';
 
 class DynamicPage extends HookConsumerWidget {
   const DynamicPage({super.key, required this.pageId});
@@ -22,6 +23,35 @@ class DynamicPage extends HookConsumerWidget {
     final selectedItems = useState<Set<int>>({});
     final scrollController = useScrollController();
     final config = ref.watch(modelConfigurationNotifierProvider);
+
+    // 新しいメソッドを追加
+    void addDeckItems(List<int> deckItems) {
+      final Set<int> uniqueItems = {...items.value};
+      final List<int> newItems = items.value.toList();
+
+      // 既存のアイテムで、デッキのアイテムと重複するものを削除
+      for (final item in deckItems) {
+        if (uniqueItems.contains(item)) {
+          newItems.removeWhere((existing) => existing == item);
+        }
+      }
+
+      // デッキのアイテムを追加する位置を決定
+      // （最後に見つかった重複アイテムの位置、または末尾）
+      int insertPosition = 0;
+      for (final item in deckItems) {
+        final existingIndex = newItems.indexOf(item);
+        if (existingIndex != -1) {
+          insertPosition = existingIndex;
+        }
+      }
+
+      // デッキのアイテムを挿入
+      newItems.insertAll(insertPosition, deckItems);
+
+      // 重複を除去
+      items.value = newItems.toSet().toList();
+    }
 
     return Scaffold(
       floatingActionButton: FloatingActionButton(
@@ -38,6 +68,20 @@ class DynamicPage extends HookConsumerWidget {
             title: Text(unit.name),
             floating: true,
             snap: true,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.library_books),
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => DeckListDialog(
+                      unitId: pageId,
+                      onDeckSelect: addDeckItems, // コールバックを追加
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
           SliverReorderableList(
             itemBuilder: (BuildContext context, int index) {
@@ -80,6 +124,8 @@ class DynamicPage extends HookConsumerWidget {
                       selectedItems.value = {};
                       isEdit.value = false;
                     },
+                    unitData: unit.data,
+                    unitId: pageId, // この行を追加
                   ),
                 ),
               );

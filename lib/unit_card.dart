@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'deck_dialog.dart';
 
 class UnitCard extends ConsumerWidget {
   final String title;
@@ -15,6 +16,8 @@ class UnitCard extends ConsumerWidget {
   final Set<int> selectedItems;
   final Function(bool?)? onSelect;
   final Function(Set<int>)? onDelete;
+  final List<List<String>> unitData;
+  final int unitId; // 追加
 
   const UnitCard({
     super.key,
@@ -27,6 +30,8 @@ class UnitCard extends ConsumerWidget {
     required this.selectedItems,
     this.onSelect,
     this.onDelete,
+    required this.unitData,
+    required this.unitId, // 追加
   });
 
   @override
@@ -149,6 +154,19 @@ class UnitCard extends ConsumerWidget {
                         ),
                       ),
                       PopupMenuItem(
+                        onTap: () {
+                          Future.delayed(
+                            const Duration(seconds: 0),
+                            () => showDialog(
+                              context: context,
+                              builder: (context) => DeckDialog(
+                                selectedItems: selectedItems,
+                                unitData: unitData,
+                                unitId: unitId, // unitIdを追加
+                              ),
+                            ),
+                          );
+                        },
                         child: Row(
                           children: [
                             const Icon(Icons.library_books),
