@@ -143,30 +143,36 @@ class DynamicPage extends HookConsumerWidget {
             child: Padding(
               padding: EdgeInsets.all(16.w),
               child: ElevatedButton(
-                onPressed: () {
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(16.w)),
-                    ),
-                    builder: (BuildContext context) {
-                      return AddItemsBottomSheet(
-                        currentItems: items.value,
-                        unitData: unit.data,
-                        onAdd: (newItems) {
-                          items.value = [...items.value, ...newItems];
-                        },
-                      );
-                    },
-                  );
-                },
+                onPressed: isEdit.value
+                    ? null
+                    : () {
+                        // 編集中は無効化
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(16.w)),
+                          ),
+                          builder: (BuildContext context) {
+                            return AddItemsBottomSheet(
+                              currentItems: items.value,
+                              unitData: unit.data,
+                              onAdd: (newItems) {
+                                items.value = [...items.value, ...newItems];
+                              },
+                            );
+                          },
+                        );
+                      },
                 style: ElevatedButton.styleFrom(
                   padding: EdgeInsets.symmetric(vertical: 16.w),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.w),
                   ),
+                  // 編集中は半透明にして無効化状態を視覚的に表現
+                  disabledBackgroundColor: Colors.grey[300],
+                  disabledForegroundColor: Colors.grey[500],
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
