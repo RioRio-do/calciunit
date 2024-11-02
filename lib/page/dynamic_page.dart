@@ -4,7 +4,6 @@ import 'package:calciunit/unit_card.dart';
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:rational/rational.dart';
 
@@ -38,9 +37,6 @@ class DynamicPage extends HookConsumerWidget {
           ),
           SliverReorderableList(
             itemBuilder: (BuildContext context, int index) {
-              if (index >= items.value.length) {
-                return Center(child: Text('Invalid index: $index'));
-              }
               return ReorderableDelayedDragStartListener(
                 key: ValueKey(items.value[index]),
                 index: index,
@@ -48,23 +44,11 @@ class DynamicPage extends HookConsumerWidget {
                   child: UnitCard(
                     title: unit.data[items.value[index]]
                         [UnitsColumn.displayName.v],
-                    leadingText: '?',
-                    constanceValue: (Decimal.tryParse(
-                                unit.data[items.value[index]]
-                                    [UnitsColumn.constant.v]) ??
-                            Rational(
-                                    BigInt.parse(unit.data[items.value[index]]
-                                            [UnitsColumn.constant.v]
-                                        .split('/')
-                                        .first),
-                                    BigInt.parse(unit.data[items.value[index]]
-                                            [UnitsColumn.constant.v]
-                                        .split('/')
-                                        .last))
-                                .toDecimal(
-                                    scaleOnInfinitePrecision:
-                                        int.tryParse(config.scaleOnInfinitePrecision)))
-                        .toString(),
+                    leadingText: unit.data[items.value[index]]
+                        [UnitsColumn.abbreviation.v],
+                    constanceValue: _dataFormatting(
+                        unit.data[items.value[index]][UnitsColumn.constant.v],
+                        config.scaleOnInfinitePrecision),
                     scaleOnInfinitePrecision: config.scaleOnInfinitePrecision,
                   ),
                 ),
@@ -83,4 +67,12 @@ class DynamicPage extends HookConsumerWidget {
       ),
     );
   }
+}
+
+String _dataFormatting(String data, String scaleOnInfinitePrecision) {
+  final output = Rational(BigInt.parse(data.split('/').first),
+          BigInt.parse(data.split('/').last))
+      .toDecimal(
+          scaleOnInfinitePrecision: int.tryParse(scaleOnInfinitePrecision));
+  return output.toString();
 }
