@@ -1,9 +1,11 @@
+import 'package:calciunit/add_item_bottom_sheet.dart';
 import 'package:calciunit/logic/data.dart';
 import 'package:calciunit/sav/model_configuration_notifier.dart';
 import 'package:calciunit/unit_card.dart';
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:rational/rational.dart';
 
@@ -15,17 +17,37 @@ class DynamicPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final unit = Units.values[pageId];
-    final items = useState<List<int>>([]);
+    final items = useState<List<int>>([0]);
     final isEdit = useState(false);
+    final selectedItems = useState<Set<int>>({});
     final scrollController = useScrollController();
     final config = ref.watch(modelConfigurationNotifierProvider);
+
+    void deleteSelectedItems() {
+      items.value = items.value
+          .where((item) => !selectedItems.value.contains(item))
+          .toList();
+      selectedItems.value = {};
+      isEdit.value = false;
+    }
 
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: () {
+          if (isEdit.value && selectedItems.value.isNotEmpty) {
+            deleteSelectedItems();
+          } else if (isEdit.value) {
+            selectedItems.value = {};
+          }
           isEdit.value = !isEdit.value;
         },
-        child: Icon(isEdit.value ? Icons.done : Icons.edit),
+        child: Icon(
+          isEdit.value && selectedItems.value.isNotEmpty
+              ? Icons.delete
+              : isEdit.value
+                  ? Icons.done
+                  : Icons.edit,
+        ),
       ),
       body: CustomScrollView(
         controller: scrollController,
@@ -37,6 +59,9 @@ class DynamicPage extends HookConsumerWidget {
           ),
           SliverReorderableList(
             itemBuilder: (BuildContext context, int index) {
+              if (index >= items.value.length) {
+                return Center(child: Text('Invalid index: $index'));
+              }
               return ReorderableDelayedDragStartListener(
                 key: ValueKey(items.value[index]),
                 index: index,
@@ -46,10 +71,25 @@ class DynamicPage extends HookConsumerWidget {
                         [UnitsColumn.displayName.v],
                     leadingText: unit.data[items.value[index]]
                         [UnitsColumn.abbreviation.v],
-                    constanceValue: _dataFormatting(
-                        unit.data[items.value[index]][UnitsColumn.constant.v],
-                        config.scaleOnInfinitePrecision),
+                    constanceValue: dataFormatting(
+                      unit.data[items.value[index]][UnitsColumn.constant.v],
+                      config.scaleOnInfinitePrecision,
+                    ),
                     scaleOnInfinitePrecision: config.scaleOnInfinitePrecision,
+                    isEdit: isEdit.value,
+                    isSelected:
+                        selectedItems.value.contains(items.value[index]),
+                    onSelect: (selected) {
+                      if (selected ?? false) {
+                        selectedItems.value = {
+                          ...selectedItems.value,
+                          items.value[index]
+                        };
+                      } else {
+                        selectedItems.value = {...selectedItems.value}
+                          ..remove(items.value[index]);
+                      }
+                    },
                   ),
                 ),
               );
@@ -63,16 +103,59 @@ class DynamicPage extends HookConsumerWidget {
               items.value.insert(newIndex, item);
             },
           ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.all(16.w),
+              child: ElevatedButton(
+                onPressed: () {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    shape: RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.vertical(top: Radius.circular(16.w)),
+                    ),
+                    builder: (BuildContext context) {
+                      return AddItemsBottomSheet(
+                        currentItems: items.value,
+                        unitData: unit.data,
+                        onAdd: (newItems) {
+                          items.value = [...items.value, ...newItems];
+                        },
+                      );
+                    },
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 16.w),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.w),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.add),
+                    SizedBox(width: 8.w),
+                    const Text('アイテムを追加'),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 }
 
-String _dataFormatting(String data, String scaleOnInfinitePrecision) {
-  final output = Rational(BigInt.parse(data.split('/').first),
-          BigInt.parse(data.split('/').last))
-      .toDecimal(
-          scaleOnInfinitePrecision: int.tryParse(scaleOnInfinitePrecision));
-  return output.toString();
+String dataFormatting(String data, String scaleOnInfinitePrecision) {
+  if (data.contains('/')) {
+    final output = Rational(BigInt.parse(data.split('/').first),
+            BigInt.parse(data.split('/').last))
+        .toDecimal(
+            scaleOnInfinitePrecision: int.tryParse(scaleOnInfinitePrecision));
+    return output.toString();
+  }
+  return data;
 }

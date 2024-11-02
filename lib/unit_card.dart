@@ -10,6 +10,9 @@ class UnitCard extends ConsumerWidget {
   final String leadingText;
   final String constanceValue;
   final String scaleOnInfinitePrecision;
+  final bool isEdit;
+  final bool? isSelected;
+  final Function(bool?)? onSelect;
 
   const UnitCard({
     super.key,
@@ -17,6 +20,9 @@ class UnitCard extends ConsumerWidget {
     required this.leadingText,
     required this.constanceValue,
     required this.scaleOnInfinitePrecision,
+    this.isEdit = false,
+    this.isSelected,
+    this.onSelect,
   });
 
   @override
@@ -114,28 +120,39 @@ class UnitCard extends ConsumerWidget {
         color: Colors.white,
         child: InkWell(
           borderRadius: BorderRadius.circular(12.w),
-          onTap: () {
-            editDialog(context);
-          },
+          onTap: isEdit
+              ? () {
+                  if (onSelect != null) {
+                    onSelect!(!isSelected!);
+                  }
+                }
+              : () {
+                  editDialog(context);
+                },
           child: ListTile(
             contentPadding: EdgeInsets.symmetric(horizontal: 16.w),
-            leading: Container(
-              width: 36.w,
-              height: 36.w,
-              decoration: BoxDecoration(
-                color: Colors.grey,
-                borderRadius: BorderRadius.circular(8.w),
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                leadingText,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12.sp,
-                ),
-              ),
-            ),
+            leading: isEdit
+                ? Checkbox(
+                    value: isSelected,
+                    onChanged: onSelect,
+                  )
+                : Container(
+                    width: 36.w,
+                    height: 36.w,
+                    decoration: BoxDecoration(
+                      color: Colors.grey,
+                      borderRadius: BorderRadius.circular(8.w),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      leadingText,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12.sp,
+                      ),
+                    ),
+                  ),
             title: Text(
               unitCov(
                   fromS: '1',
