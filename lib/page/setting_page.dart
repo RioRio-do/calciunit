@@ -29,7 +29,7 @@ class SettingPage extends HookConsumerWidget {
         child: Column(
           children: [
             TextField(
-              decoration: const InputDecoration(labelText: '小数点桁数'),
+              decoration: const InputDecoration(labelText: '精度'),
               controller: textController,
               onChanged: (value) {
                 configNotifier.updateScaleOnInfinitePrecision(value);
