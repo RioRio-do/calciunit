@@ -17,7 +17,7 @@ List<GoRoute> generateRoutes(int count) {
     count,
     (index) {
       return GoRoute(
-        path: '/$index',
+        path: '$index',
         builder: (context, state) => DynamicPage(pageId: index),
       );
     },
@@ -36,15 +36,17 @@ final goRouterProvider = Provider<GoRouter>(
           builder: (BuildContext context, GoRouterState state) {
             return const MenuPage();
           },
+          routes: [
+            GoRoute(
+              path: AppRoute.config.path,
+              name: AppRoute.config.name,
+              builder: (BuildContext context, GoRouterState state) {
+                return const SettingPage();
+              },
+            ),
+            ...generateRoutes(Units.values.length),
+          ],
         ),
-        GoRoute(
-          path: AppRoute.config.path,
-          name: AppRoute.config.name,
-          builder: (BuildContext context, GoRouterState state) {
-            return const SettingPage();
-          },
-        ),
-        ...generateRoutes(Units.values.length)
       ],
     );
   },

@@ -4,12 +4,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'deck_dialog.dart';
 
 class UnitCard extends ConsumerWidget {
   final String title;
   final String leadingText;
   final String constanceValue;
   final String scaleOnInfinitePrecision;
+  final bool isEdit;
+  final bool? isSelected;
+  final Set<int> selectedItems;
+  final Function(bool?)? onSelect;
+  final Function(Set<int>)? onDelete;
+  final List<List<String>> unitData;
+  final int unitId; // 追加
 
   const UnitCard({
     super.key,
@@ -17,13 +25,20 @@ class UnitCard extends ConsumerWidget {
     required this.leadingText,
     required this.constanceValue,
     required this.scaleOnInfinitePrecision,
+    this.isEdit = false,
+    this.isSelected,
+    required this.selectedItems,
+    this.onSelect,
+    this.onDelete,
+    required this.unitData,
+    required this.unitId, // 追加
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final input = ref.watch(inputValueProvider);
 
-    Future<void> showEditDialog(BuildContext context) async {
+    Future<void> editDialog(BuildContext context) async {
       final TextEditingController controller = TextEditingController(
         text: unitCov(
             fromS: '1',
@@ -62,6 +77,21 @@ class UnitCard extends ConsumerWidget {
                     children: <Widget>[
                       TextButton(
                         onPressed: () {
+                          Clipboard.setData(ClipboardData(
+                              text: unitCov(
+                                  fromS: '1',
+                                  toS: constanceValue,
+                                  valueS: input,
+                                  scaleOnInfinitePrecisionS:
+                                      scaleOnInfinitePrecision)));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('クリップボードにコピーされました')),
+                          );
+                        },
+                        child: const Text('コピー'),
+                      ),
+                      TextButton(
+                        onPressed: () {
                           Navigator.of(context).pop();
                         },
                         child: const Text('キャンセル'),
@@ -79,21 +109,6 @@ class UnitCard extends ConsumerWidget {
                         },
                         child: const Text('保存'),
                       ),
-                      TextButton(
-                        onPressed: () {
-                          Clipboard.setData(ClipboardData(
-                              text: unitCov(
-                                  fromS: '1',
-                                  toS: constanceValue,
-                                  valueS: input,
-                                  scaleOnInfinitePrecisionS:
-                                      scaleOnInfinitePrecision)));
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('クリップボードにコピーされました')),
-                          );
-                        },
-                        child: const Text('コピー'),
-                      )
                     ],
                   )
                 ],
@@ -112,47 +127,111 @@ class UnitCard extends ConsumerWidget {
         elevation: 1.w,
         borderRadius: BorderRadius.circular(12.w),
         color: Colors.white,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12.w),
-          onTap: () {
-            showEditDialog(context);
-          },
-          child: ListTile(
-            contentPadding: EdgeInsets.symmetric(horizontal: 16.w),
-            leading: Container(
-              width: 36.w,
-              height: 36.w,
-              decoration: BoxDecoration(
-                color: Colors.grey,
-                borderRadius: BorderRadius.circular(8.w),
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                leadingText,
+        child: GestureDetector(
+          onLongPressStart: (isEdit && (isSelected ?? false))
+              ? (LongPressStartDetails details) {
+                  showMenu(
+                    context: context,
+                    position: RelativeRect.fromLTRB(
+                      details.globalPosition.dx,
+                      details.globalPosition.dy,
+                      details.globalPosition.dx,
+                      details.globalPosition.dy,
+                    ),
+                    items: [
+                      PopupMenuItem(
+                        onTap: () {
+                          if (onDelete != null) {
+                            onDelete!(selectedItems);
+                          }
+                        },
+                        child: Row(
+                          children: [
+                            const Icon(Icons.delete, color: Colors.red),
+                            SizedBox(width: 8.w),
+                            const Text('削除'),
+                          ],
+                        ),
+                      ),
+                      PopupMenuItem(
+                        onTap: () {
+                          Future.delayed(
+                            const Duration(seconds: 0),
+                            () => showDialog(
+                              context: context,
+                              builder: (context) => DeckDialog(
+                                selectedItems: selectedItems,
+                                unitData: unitData,
+                                unitId: unitId, // unitIdを追加
+                              ),
+                            ),
+                          );
+                        },
+                        child: Row(
+                          children: [
+                            const Icon(Icons.library_books),
+                            SizedBox(width: 8.w),
+                            const Text('デッキ'),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                }
+              : null,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12.w),
+            onTap: isEdit
+                ? () {
+                    if (onSelect != null) {
+                      onSelect!(!isSelected!);
+                    }
+                  }
+                : () {
+                    editDialog(context);
+                  },
+            child: ListTile(
+              contentPadding: EdgeInsets.symmetric(horizontal: 16.w),
+              leading: isEdit
+                  ? Checkbox(
+                      value: isSelected,
+                      onChanged: onSelect,
+                    )
+                  : Container(
+                      width: 36.w,
+                      height: 36.w,
+                      decoration: BoxDecoration(
+                        color: Colors.grey,
+                        borderRadius: BorderRadius.circular(8.w),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        leadingText,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12.sp,
+                        ),
+                      ),
+                    ),
+              title: Text(
+                unitCov(
+                    fromS: '1',
+                    toS: constanceValue,
+                    valueS: input,
+                    scaleOnInfinitePrecisionS: scaleOnInfinitePrecision),
                 style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12.sp,
+                  color: Colors.black,
+                  fontSize: 16.sp,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-            ),
-            title: Text(
-              unitCov(
-                  fromS: '1',
-                  toS: constanceValue,
-                  valueS: input,
-                  scaleOnInfinitePrecisionS: scaleOnInfinitePrecision),
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 16.sp,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            subtitle: Text(
-              title,
-              style: TextStyle(
-                color: Colors.black54,
-                fontSize: 12.sp,
+              subtitle: Text(
+                title,
+                style: TextStyle(
+                  color: Colors.black54,
+                  fontSize: 12.sp,
+                ),
               ),
             ),
           ),
