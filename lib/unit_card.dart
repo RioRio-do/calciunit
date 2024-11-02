@@ -2,11 +2,10 @@ import 'input_value_state.dart';
 import 'logic/units_cov.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class UnitCard extends HookConsumerWidget {
+class UnitCard extends ConsumerWidget {
   final String title;
   final String leadingText;
   final String constanceValue;
@@ -23,15 +22,14 @@ class UnitCard extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final input = ref.watch(inputValueProvider);
-    final count = useState(unitCov(
-        fromS: '1',
-        toS: constanceValue,
-        valueS: input,
-        scaleOnInfinitePrecisionS: scaleOnInfinitePrecision));
 
     Future<void> showEditDialog(BuildContext context) async {
       final TextEditingController controller = TextEditingController(
-        text: count.value.toString(),
+        text: unitCov(
+            fromS: '1',
+            toS: constanceValue,
+            valueS: input,
+            scaleOnInfinitePrecisionS: scaleOnInfinitePrecision),
       );
       FocusNode focusNode = FocusNode();
       controller.selection = TextSelection(
@@ -70,16 +68,26 @@ class UnitCard extends HookConsumerWidget {
                       ),
                       TextButton(
                         onPressed: () {
-                          String? newValue = controller.text;
-                          count.value = newValue;
+                          String? newValue = unitCov(
+                              fromS: constanceValue,
+                              toS: '1',
+                              valueS: controller.text,
+                              scaleOnInfinitePrecisionS:
+                                  scaleOnInfinitePrecision);
+                          ref.read(inputValueProvider.notifier).set(newValue);
                           Navigator.of(context).pop();
                         },
                         child: const Text('保存'),
                       ),
                       TextButton(
                         onPressed: () {
-                          Clipboard.setData(
-                              ClipboardData(text: count.value.toString()));
+                          Clipboard.setData(ClipboardData(
+                              text: unitCov(
+                                  fromS: '1',
+                                  toS: constanceValue,
+                                  valueS: input,
+                                  scaleOnInfinitePrecisionS:
+                                      scaleOnInfinitePrecision)));
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text('クリップボードにコピーされました')),
                           );
@@ -129,7 +137,11 @@ class UnitCard extends HookConsumerWidget {
               ),
             ),
             title: Text(
-              count.value,
+              unitCov(
+                  fromS: '1',
+                  toS: constanceValue,
+                  valueS: input,
+                  scaleOnInfinitePrecisionS: scaleOnInfinitePrecision),
               style: TextStyle(
                 color: Colors.black,
                 fontSize: 16.sp,
