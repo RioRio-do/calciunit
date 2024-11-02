@@ -23,31 +23,13 @@ class DynamicPage extends HookConsumerWidget {
     final scrollController = useScrollController();
     final config = ref.watch(modelConfigurationNotifierProvider);
 
-    void deleteSelectedItems() {
-      items.value = items.value
-          .where((item) => !selectedItems.value.contains(item))
-          .toList();
-      selectedItems.value = {};
-      isEdit.value = false;
-    }
-
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          if (isEdit.value && selectedItems.value.isNotEmpty) {
-            deleteSelectedItems();
-          } else if (isEdit.value) {
-            selectedItems.value = {};
-          }
           isEdit.value = !isEdit.value;
+          selectedItems.value = {};
         },
-        child: Icon(
-          isEdit.value && selectedItems.value.isNotEmpty
-              ? Icons.delete
-              : isEdit.value
-                  ? Icons.done
-                  : Icons.edit,
-        ),
+        child: Icon(isEdit.value ? Icons.done : Icons.edit),
       ),
       body: CustomScrollView(
         controller: scrollController,
@@ -89,6 +71,14 @@ class DynamicPage extends HookConsumerWidget {
                         selectedItems.value = {...selectedItems.value}
                           ..remove(items.value[index]);
                       }
+                    },
+                    selectedItems: selectedItems.value,
+                    onDelete: (selectedIndices) {
+                      items.value = items.value
+                          .where((item) => !selectedIndices.contains(item))
+                          .toList();
+                      selectedItems.value = {};
+                      isEdit.value = false;
                     },
                   ),
                 ),

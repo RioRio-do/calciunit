@@ -12,7 +12,9 @@ class UnitCard extends ConsumerWidget {
   final String scaleOnInfinitePrecision;
   final bool isEdit;
   final bool? isSelected;
+  final Set<int> selectedItems;
   final Function(bool?)? onSelect;
+  final Function(Set<int>)? onDelete;
 
   const UnitCard({
     super.key,
@@ -22,7 +24,9 @@ class UnitCard extends ConsumerWidget {
     required this.scaleOnInfinitePrecision,
     this.isEdit = false,
     this.isSelected,
+    required this.selectedItems,
     this.onSelect,
+    this.onDelete,
   });
 
   @override
@@ -118,58 +122,98 @@ class UnitCard extends ConsumerWidget {
         elevation: 1.w,
         borderRadius: BorderRadius.circular(12.w),
         color: Colors.white,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12.w),
-          onTap: isEdit
-              ? () {
-                  if (onSelect != null) {
-                    onSelect!(!isSelected!);
-                  }
-                }
-              : () {
-                  editDialog(context);
-                },
-          child: ListTile(
-            contentPadding: EdgeInsets.symmetric(horizontal: 16.w),
-            leading: isEdit
-                ? Checkbox(
-                    value: isSelected,
-                    onChanged: onSelect,
-                  )
-                : Container(
-                    width: 36.w,
-                    height: 36.w,
-                    decoration: BoxDecoration(
-                      color: Colors.grey,
-                      borderRadius: BorderRadius.circular(8.w),
+        child: GestureDetector(
+          onLongPressStart: (isEdit && (isSelected ?? false))
+              ? (LongPressStartDetails details) {
+                  showMenu(
+                    context: context,
+                    position: RelativeRect.fromLTRB(
+                      details.globalPosition.dx,
+                      details.globalPosition.dy,
+                      details.globalPosition.dx,
+                      details.globalPosition.dy,
                     ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      leadingText,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12.sp,
+                    items: [
+                      PopupMenuItem(
+                        onTap: () {
+                          if (onDelete != null) {
+                            onDelete!(selectedItems);
+                          }
+                        },
+                        child: Row(
+                          children: [
+                            const Icon(Icons.delete, color: Colors.red),
+                            SizedBox(width: 8.w),
+                            const Text('削除'),
+                          ],
+                        ),
+                      ),
+                      PopupMenuItem(
+                        child: Row(
+                          children: [
+                            const Icon(Icons.library_books),
+                            SizedBox(width: 8.w),
+                            const Text('デッキ'),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                }
+              : null,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12.w),
+            onTap: isEdit
+                ? () {
+                    if (onSelect != null) {
+                      onSelect!(!isSelected!);
+                    }
+                  }
+                : () {
+                    editDialog(context);
+                  },
+            child: ListTile(
+              contentPadding: EdgeInsets.symmetric(horizontal: 16.w),
+              leading: isEdit
+                  ? Checkbox(
+                      value: isSelected,
+                      onChanged: onSelect,
+                    )
+                  : Container(
+                      width: 36.w,
+                      height: 36.w,
+                      decoration: BoxDecoration(
+                        color: Colors.grey,
+                        borderRadius: BorderRadius.circular(8.w),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        leadingText,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12.sp,
+                        ),
                       ),
                     ),
-                  ),
-            title: Text(
-              unitCov(
-                  fromS: '1',
-                  toS: constanceValue,
-                  valueS: input,
-                  scaleOnInfinitePrecisionS: scaleOnInfinitePrecision),
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 16.sp,
-                overflow: TextOverflow.ellipsis,
+              title: Text(
+                unitCov(
+                    fromS: '1',
+                    toS: constanceValue,
+                    valueS: input,
+                    scaleOnInfinitePrecisionS: scaleOnInfinitePrecision),
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 16.sp,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-            ),
-            subtitle: Text(
-              title,
-              style: TextStyle(
-                color: Colors.black54,
-                fontSize: 12.sp,
+              subtitle: Text(
+                title,
+                style: TextStyle(
+                  color: Colors.black54,
+                  fontSize: 12.sp,
+                ),
               ),
             ),
           ),
