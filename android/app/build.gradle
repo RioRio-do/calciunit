@@ -31,6 +31,7 @@ android {
 
     buildTypes {
         release {
+        signingConfig = signingConfigs.debug
         minifyEnabled true // ProGuard有効化
         shrinkResources true // 未使用リソースの削除
         proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
