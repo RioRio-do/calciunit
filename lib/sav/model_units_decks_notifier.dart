@@ -22,10 +22,8 @@ class ModelUnitsDecksNotifier extends _$ModelUnitsDecksNotifier {
   }
 
   Future<void> loadDecks() async {
-    print('📘 loadDecks called');
     final prefs = await SharedPreferences.getInstance();
     final decksJson = prefs.getString('unitsDecks');
-    print('📘 loaded JSON: $decksJson');
     if (decksJson != null) {
       final Map<String, dynamic> decksMap = json.decode(decksJson);
       final Map<String, ({int unitId, List<int> items})> decks = decksMap.map(
@@ -38,13 +36,10 @@ class ModelUnitsDecksNotifier extends _$ModelUnitsDecksNotifier {
         ),
       );
       state = ModelUnitsDecks(decks: decks);
-      print('📘 state updated: ${state.decks}');
     }
   }
 
   Future<void> addDeck(String name, int unitId, List<int> items) async {
-    print('➕ addDeck called - name: $name, unitId: $unitId, items: $items');
-
     // 既存のデータを読み込む
     final prefs = await SharedPreferences.getInstance();
     final existingJson = prefs.getString('unitsDecks');
@@ -80,12 +75,9 @@ class ModelUnitsDecksNotifier extends _$ModelUnitsDecksNotifier {
       ),
     );
     await prefs.setString('unitsDecks', json.encode(serializedDecks));
-    print('➕ deck saved: ${state.decks}');
   }
 
   Future<void> removeDeck(String name) async {
-    print('🗑️ removeDeck called - name: $name');
-
     // stateを更新
     final newDecks =
         Map<String, ({int unitId, List<int> items})>.from(state.decks);
@@ -104,6 +96,5 @@ class ModelUnitsDecksNotifier extends _$ModelUnitsDecksNotifier {
       ),
     );
     await prefs.setString('unitsDecks', json.encode(serializedDecks));
-    print('🗑️ deck removed: ${state.decks}');
   }
 }
