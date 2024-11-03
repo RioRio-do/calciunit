@@ -22,87 +22,100 @@ class DeckDialog extends HookConsumerWidget {
     final TextEditingController nameController = TextEditingController();
     final showError = useState(false);
 
-    return AlertDialog(
-      title: const Text('デッキを保存'),
-      content: SizedBox(
-        width: double.maxFinite,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: InputDecoration(
-                labelText: 'デッキ名',
-                hintText: 'デッキの名前を入力',
-                errorText: showError.value ? 'デッキ名を入力してください' : null,
-              ),
-              onChanged: (_) => showError.value = false,
-            ),
-            SizedBox(height: 6.h),
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(8.w),
+    void handleSave() async {
+      if (nameController.text.trim().isEmpty) {
+        showError.value = true;
+        return;
+      }
+
+      try {
+        await ref.read(modelUnitsDecksNotifierProvider.notifier).addDeck(
+              nameController.text,
+              unitId,
+              selectedItems.toList(),
+            );
+        if (context.mounted) {
+          Navigator.of(context).pop(); // ここを修正
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('エラーが発生しました: $e')),
+          );
+        }
+      }
+    }
+
+    return Dialog(
+      child: AlertDialog(
+        title: const Text('デッキを保存'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: InputDecoration(
+                  labelText: 'デッキ名',
+                  hintText: 'デッキの名前を入力',
+                  errorText: showError.value ? 'デッキ名を入力してください' : null,
                 ),
-                child: RawScrollbar(
-                  thumbColor: Colors.grey[400],
-                  radius: Radius.circular(4.w),
-                  thickness: 4.w,
-                  child: ListView.separated(
-                    padding: EdgeInsets.all(8.w),
-                    shrinkWrap: true,
-                    itemCount: selectedItems.length,
-                    separatorBuilder: (context, index) =>
-                        const Divider(height: 1),
-                    itemBuilder: (context, index) {
-                      final itemId = selectedItems.elementAt(index);
-                      return ListTile(
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: 12.w,
-                          vertical: 4.h,
-                        ),
-                        title:
-                            Text(unitData[itemId][UnitsColumn.displayName.v]),
-                        leading: Text(
-                          unitData[itemId][UnitsColumn.abbreviation.v],
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14.sp,
+                onChanged: (_) => showError.value = false,
+              ),
+              SizedBox(height: 6.h),
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(8.w),
+                  ),
+                  child: RawScrollbar(
+                    thumbColor: Colors.grey[400],
+                    radius: Radius.circular(4.w),
+                    thickness: 4.w,
+                    child: ListView.separated(
+                      padding: EdgeInsets.all(8.w),
+                      shrinkWrap: true,
+                      itemCount: selectedItems.length,
+                      separatorBuilder: (context, index) =>
+                          const Divider(height: 1),
+                      itemBuilder: (context, index) {
+                        final itemId = selectedItems.elementAt(index);
+                        return ListTile(
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 12.w,
+                            vertical: 4.h,
                           ),
-                        ),
-                      );
-                    },
+                          title:
+                              Text(unitData[itemId][UnitsColumn.displayName.v]),
+                          leading: Text(
+                            unitData[itemId][UnitsColumn.abbreviation.v],
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14.sp,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('キャンセル'),
+          ),
+          TextButton(
+            onPressed: handleSave,
+            child: const Text('保存'),
+          ),
+        ],
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('キャンセル'),
-        ),
-        TextButton(
-          onPressed: () async {
-            if (nameController.text.trim().isEmpty) {
-              showError.value = true;
-            } else {
-              await ref.read(modelUnitsDecksNotifierProvider.notifier).addDeck(
-                    nameController.text,
-                    unitId, // unitIdを追加
-                    selectedItems.toList(),
-                  );
-              if (context.mounted) {
-                Navigator.of(context).pop();
-              }
-            }
-          },
-          child: const Text('保存'),
-        ),
-      ],
     );
   }
 }

@@ -7,9 +7,16 @@ part 'model_units_decks_notifier.g.dart';
 
 @riverpod
 class ModelUnitsDecksNotifier extends _$ModelUnitsDecksNotifier {
+  bool _isInitialized = false;
+
   @override
   ModelUnitsDecks build() {
-    loadDecks();
+    if (!_isInitialized) {
+      _isInitialized = true;
+      Future.microtask(() async {
+        await loadDecks();
+      });
+    }
     return const ModelUnitsDecks();
   }
 
@@ -31,9 +38,26 @@ class ModelUnitsDecksNotifier extends _$ModelUnitsDecksNotifier {
     }
   }
 
-  Future<void> saveDecks() async {
+  Future<void> addDeck(String name, int unitId, List<int> items) async {
     final prefs = await SharedPreferences.getInstance();
-    final Map<String, dynamic> serializedDecks = state.decks.map(
+    final existingJson = prefs.getString('unitsDecks');
+    Map<String, ({int unitId, List<int> items})> mergedDecks = {};
+
+    if (existingJson != null) {
+      final Map<String, dynamic> existingMap = json.decode(existingJson);
+      mergedDecks = existingMap.map(
+        (key, value) => MapEntry(
+          key,
+          (
+            unitId: value['unitId'] as int,
+            items: (value['items'] as List<dynamic>).cast<int>(),
+          ),
+        ),
+      );
+    }
+    mergedDecks[name] = (unitId: unitId, items: items);
+    state = ModelUnitsDecks(decks: mergedDecks);
+    final Map<String, dynamic> serializedDecks = mergedDecks.map(
       (key, value) => MapEntry(
         key,
         {
@@ -45,25 +69,21 @@ class ModelUnitsDecksNotifier extends _$ModelUnitsDecksNotifier {
     await prefs.setString('unitsDecks', json.encode(serializedDecks));
   }
 
-  Future<void> addDeck(String name, int unitId, List<int> items) async {
-    state = state.copyWith(
-      decks: {
-        ...state.decks,
-        name: (unitId: unitId, items: items),
-      },
-    );
-    await saveDecks();
-  }
-
   Future<void> removeDeck(String name) async {
     final newDecks =
         Map<String, ({int unitId, List<int> items})>.from(state.decks);
     newDecks.remove(name);
     state = state.copyWith(decks: newDecks);
-    await saveDecks();
-  }
-
-  Future<void> updateDeck(String name, int unitId, List<int> items) async {
-    await addDeck(name, unitId, items);
+    final prefs = await SharedPreferences.getInstance();
+    final Map<String, dynamic> serializedDecks = newDecks.map(
+      (key, value) => MapEntry(
+        key,
+        {
+          'unitId': value.unitId,
+          'items': value.items,
+        },
+      ),
+    );
+    await prefs.setString('unitsDecks', json.encode(serializedDecks));
   }
 }
