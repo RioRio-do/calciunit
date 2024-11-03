@@ -7,15 +7,25 @@ part 'model_units_decks_notifier.g.dart';
 
 @riverpod
 class ModelUnitsDecksNotifier extends _$ModelUnitsDecksNotifier {
+  bool _isInitialized = false;
+
   @override
   ModelUnitsDecks build() {
-    loadDecks();
+    if (!_isInitialized) {
+      _isInitialized = true;
+      // 非同期で初期データを読み込む
+      Future.microtask(() async {
+        await loadDecks();
+      });
+    }
     return const ModelUnitsDecks();
   }
 
   Future<void> loadDecks() async {
+    print('📘 loadDecks called');
     final prefs = await SharedPreferences.getInstance();
     final decksJson = prefs.getString('unitsDecks');
+    print('📘 loaded JSON: $decksJson');
     if (decksJson != null) {
       final Map<String, dynamic> decksMap = json.decode(decksJson);
       final Map<String, ({int unitId, List<int> items})> decks = decksMap.map(
@@ -28,12 +38,39 @@ class ModelUnitsDecksNotifier extends _$ModelUnitsDecksNotifier {
         ),
       );
       state = ModelUnitsDecks(decks: decks);
+      print('📘 state updated: ${state.decks}');
     }
   }
 
-  Future<void> saveDecks() async {
+  Future<void> addDeck(String name, int unitId, List<int> items) async {
+    print('➕ addDeck called - name: $name, unitId: $unitId, items: $items');
+
+    // 既存のデータを読み込む
     final prefs = await SharedPreferences.getInstance();
-    final Map<String, dynamic> serializedDecks = state.decks.map(
+    final existingJson = prefs.getString('unitsDecks');
+    Map<String, ({int unitId, List<int> items})> mergedDecks = {};
+
+    if (existingJson != null) {
+      final Map<String, dynamic> existingMap = json.decode(existingJson);
+      mergedDecks = existingMap.map(
+        (key, value) => MapEntry(
+          key,
+          (
+            unitId: value['unitId'] as int,
+            items: (value['items'] as List<dynamic>).cast<int>(),
+          ),
+        ),
+      );
+    }
+
+    // 新しいデッキを追加
+    mergedDecks[name] = (unitId: unitId, items: items);
+
+    // stateを更新
+    state = ModelUnitsDecks(decks: mergedDecks);
+
+    // マージしたデータを保存
+    final Map<String, dynamic> serializedDecks = mergedDecks.map(
       (key, value) => MapEntry(
         key,
         {
@@ -43,27 +80,30 @@ class ModelUnitsDecksNotifier extends _$ModelUnitsDecksNotifier {
       ),
     );
     await prefs.setString('unitsDecks', json.encode(serializedDecks));
-  }
-
-  Future<void> addDeck(String name, int unitId, List<int> items) async {
-    state = state.copyWith(
-      decks: {
-        ...state.decks,
-        name: (unitId: unitId, items: items),
-      },
-    );
-    await saveDecks();
+    print('➕ deck saved: ${state.decks}');
   }
 
   Future<void> removeDeck(String name) async {
+    print('🗑️ removeDeck called - name: $name');
+
+    // stateを更新
     final newDecks =
         Map<String, ({int unitId, List<int> items})>.from(state.decks);
     newDecks.remove(name);
     state = state.copyWith(decks: newDecks);
-    await saveDecks();
-  }
 
-  Future<void> updateDeck(String name, int unitId, List<int> items) async {
-    await addDeck(name, unitId, items);
+    // SharedPreferencesに直接保存
+    final prefs = await SharedPreferences.getInstance();
+    final Map<String, dynamic> serializedDecks = newDecks.map(
+      (key, value) => MapEntry(
+        key,
+        {
+          'unitId': value.unitId,
+          'items': value.items,
+        },
+      ),
+    );
+    await prefs.setString('unitsDecks', json.encode(serializedDecks));
+    print('🗑️ deck removed: ${state.decks}');
   }
 }
