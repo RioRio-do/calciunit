@@ -13,7 +13,6 @@ class ModelUnitsDecksNotifier extends _$ModelUnitsDecksNotifier {
   ModelUnitsDecks build() {
     if (!_isInitialized) {
       _isInitialized = true;
-      // 非同期で初期データを読み込む
       Future.microtask(() async {
         await loadDecks();
       });
@@ -40,7 +39,6 @@ class ModelUnitsDecksNotifier extends _$ModelUnitsDecksNotifier {
   }
 
   Future<void> addDeck(String name, int unitId, List<int> items) async {
-    // 既存のデータを読み込む
     final prefs = await SharedPreferences.getInstance();
     final existingJson = prefs.getString('unitsDecks');
     Map<String, ({int unitId, List<int> items})> mergedDecks = {};
@@ -57,14 +55,8 @@ class ModelUnitsDecksNotifier extends _$ModelUnitsDecksNotifier {
         ),
       );
     }
-
-    // 新しいデッキを追加
     mergedDecks[name] = (unitId: unitId, items: items);
-
-    // stateを更新
     state = ModelUnitsDecks(decks: mergedDecks);
-
-    // マージしたデータを保存
     final Map<String, dynamic> serializedDecks = mergedDecks.map(
       (key, value) => MapEntry(
         key,
@@ -78,13 +70,10 @@ class ModelUnitsDecksNotifier extends _$ModelUnitsDecksNotifier {
   }
 
   Future<void> removeDeck(String name) async {
-    // stateを更新
     final newDecks =
         Map<String, ({int unitId, List<int> items})>.from(state.decks);
     newDecks.remove(name);
     state = state.copyWith(decks: newDecks);
-
-    // SharedPreferencesに直接保存
     final prefs = await SharedPreferences.getInstance();
     final Map<String, dynamic> serializedDecks = newDecks.map(
       (key, value) => MapEntry(

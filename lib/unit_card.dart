@@ -154,18 +154,18 @@ class UnitCard extends ConsumerWidget {
                         ),
                       ),
                       PopupMenuItem(
-                        onTap: () {
-                          Future.delayed(
-                            const Duration(seconds: 0),
-                            () => showDialog(
+                        onTap: () async {
+                          Navigator.of(context).pop();
+                          if (context.mounted) {
+                            await showDialog(
                               context: context,
                               builder: (context) => DeckDialog(
                                 selectedItems: selectedItems,
                                 unitData: unitData,
-                                unitId: unitId, // unitIdを追加
+                                unitId: unitId,
                               ),
-                            ),
-                          );
+                            );
+                          }
                         },
                         child: Row(
                           children: [
