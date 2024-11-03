@@ -150,9 +150,8 @@ class DynamicPage extends HookConsumerWidget {
                         showModalBottomSheet(
                           context: context,
                           isScrollControlled: true,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.vertical(
-                                top: Radius.circular(16.w)),
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.zero, // 角を四角く
                           ),
                           builder: (BuildContext context) {
                             return AddItemsBottomSheet(
@@ -167,8 +166,9 @@ class DynamicPage extends HookConsumerWidget {
                       },
                 style: ElevatedButton.styleFrom(
                   padding: EdgeInsets.symmetric(vertical: 16.w),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.w),
+                  shape: const RoundedRectangleBorder(
+                    // 角を四角く
+                    borderRadius: BorderRadius.zero,
                   ),
                   // 編集中は半透明にして無効化状態を視覚的に表現
                   disabledBackgroundColor: Colors.grey[300],

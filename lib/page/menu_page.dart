@@ -31,8 +31,8 @@ class MenuPage extends StatelessWidget {
                   padding: EdgeInsets.only(bottom: 8.h),
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.w),
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.zero, // 角を四角く
                       ),
                       padding: EdgeInsets.symmetric(
                         horizontal: 16.w,
