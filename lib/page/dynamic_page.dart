@@ -69,6 +69,23 @@ class DynamicPage extends HookConsumerWidget {
             floating: true,
             snap: true,
             actions: [
+              if (isEdit.value) // 編集モード時のみ表示
+                IconButton(
+                  icon: const Icon(Icons.select_all),
+                  onPressed: () {
+                    // すべてのアイテムが選択されているか確認
+                    bool allSelected = items.value
+                        .every((item) => selectedItems.value.contains(item));
+
+                    if (allSelected) {
+                      // 全て選択されている場合は選択解除
+                      selectedItems.value = {};
+                    } else {
+                      // そうでない場合は全選択
+                      selectedItems.value = Set.from(items.value);
+                    }
+                  },
+                ),
               IconButton(
                 icon: const Icon(Icons.library_books),
                 onPressed: () {
