@@ -1,9 +1,9 @@
 name: calciunit
-description: "A new Flutter project."
+description: "Android-compatible unit converter that connects quantitative units with intuitive, familiar objects."
 
 publish_to: "none"
 
-version: 0.1.0+3
+version: 0.2.0+2
 
 environment:
   sdk: ^3.5.3
