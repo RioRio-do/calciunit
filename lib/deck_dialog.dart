@@ -23,10 +23,10 @@ class DeckDialog extends HookConsumerWidget {
     final showError = useState(false);
 
     return AlertDialog(
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16.w),
       ),
-      contentPadding: EdgeInsets.zero,
+      contentPadding: EdgeInsets.all(16.w),
       title: const Text('デッキを保存'),
       content: SizedBox(
         width: double.maxFinite,
