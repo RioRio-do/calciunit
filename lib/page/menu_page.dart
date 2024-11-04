@@ -1,3 +1,5 @@
+import 'package:flutter/services.dart';
+
 import '../app_route.dart';
 import '../logic/data.dart';
 import 'package:flutter/material.dart';
@@ -11,14 +13,24 @@ class MenuPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('CalciUnit'),
+        title: const Text('Calciunit'),
         centerTitle: true,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              GoRouter.of(context).go(AppRoute.config.path);
-            },
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8.w),
+            child: IconButton(
+              icon: Icon(
+                Icons.settings,
+                size: 28.w, // アイコンサイズを大きく
+              ),
+              style: IconButton.styleFrom(
+                minimumSize: Size(48.w, 48.h), // タップ領域を広げる
+              ),
+              onPressed: () {
+                HapticFeedback.lightImpact(); // 触覚フィードバックを追加
+                GoRouter.of(context).go(AppRoute.config.path);
+              },
+            ),
           ),
         ],
       ),
@@ -28,30 +40,40 @@ class MenuPage extends StatelessWidget {
           children: [
             SizedBox(height: 16.h),
             ...Units.values.map((unit) => Padding(
-                  padding: EdgeInsets.only(bottom: 8.h),
+                  padding: EdgeInsets.only(bottom: 16.h), // 間隔を広げる
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.zero, // 角を四角く
+                        borderRadius: BorderRadius.zero,
                       ),
                       padding: EdgeInsets.symmetric(
-                        horizontal: 16.w,
-                        vertical: 12.h,
+                        horizontal: 24.w, // 左右のパディングを増やす
+                        vertical: 20.h, // 上下のパディングを増やす
                       ),
+                      minimumSize: Size.fromHeight(72.h), // 最小の高さを設定
                     ),
                     onPressed: () {
                       context.go('/${unit.index}');
                     },
                     child: Row(
                       children: [
-                        Icon(_getIconForUnit(unit), size: 24.w),
-                        SizedBox(width: 12.w),
+                        Icon(
+                          _getIconForUnit(unit),
+                          size: 32.w, // アイコンを大きく
+                        ),
+                        SizedBox(width: 20.w), // アイコンとテキストの間隔を広げる
                         Text(
                           unit.name,
-                          style: TextStyle(fontSize: 16.sp),
+                          style: TextStyle(
+                            fontSize: 18.sp, // フォントサイズを大きく
+                            fontWeight: FontWeight.w500, // やや���く
+                          ),
                         ),
                         const Spacer(),
-                        Icon(Icons.arrow_forward_ios, size: 16.w),
+                        Icon(
+                          Icons.arrow_forward_ios,
+                          size: 20.w, // 矢印も少し大きく
+                        ),
                       ],
                     ),
                   ),
