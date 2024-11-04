@@ -21,6 +21,23 @@ class AddDeckBottomSheet extends HookConsumerWidget {
     this.initialItems,
   });
 
+  // 検索フィルタリングのロジックを関数に抽出
+  List<int> filterAvailableItems(
+      String search, List<int> current, List<List<String>> data) {
+    final searchLower = search.toLowerCase();
+    return List.generate(data.length, (i) => i)
+        .where((i) => !current.contains(i))
+        .where((i) {
+      final displayName = data[i][UnitsColumn.displayName.v].toLowerCase();
+      final abbreviation = data[i][UnitsColumn.abbreviation.v].toLowerCase();
+      final category = data[i][UnitsColumn.category.v].toLowerCase();
+
+      return displayName.contains(searchLower) ||
+          abbreviation.contains(searchLower) ||
+          category.contains(searchLower);
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedItems = useState<Set<int>>(
@@ -29,6 +46,10 @@ class AddDeckBottomSheet extends HookConsumerWidget {
     final searchText = useState('');
     final nameController = useTextEditingController(text: deckName);
     final showError = useState(false);
+
+    // buildメソッド内のフィルタリングを更新
+    filterAvailableItems(
+        searchText.value, selectedItems.value.toList(), unitData);
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.7,

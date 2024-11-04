@@ -7,7 +7,7 @@ part of 'model_units_decks_notifier.dart';
 // **************************************************************************
 
 String _$modelUnitsDecksNotifierHash() =>
-    r'26ab36af36798fb27bd9705113c9fcaf489d9237';
+    r'97b989c58492dd96bba8bcf3774d6f8d2ace597c';
 
 /// See also [ModelUnitsDecksNotifier].
 @ProviderFor(ModelUnitsDecksNotifier)

@@ -12,12 +12,15 @@ class ModelConfigurationNotifier extends _$ModelConfigurationNotifier {
     return const ModelConfiguration();
   }
 
+  String _getPreference(
+      SharedPreferences prefs, String key, String defaultValue) {
+    return prefs.getString(key) ?? defaultValue;
+  }
+
   Future<void> loadConfiguration() async {
     final prefs = await SharedPreferences.getInstance();
-    final scaleOnInfinitePrecision =
-        prefs.getString('scaleOnInfinitePrecision') ?? '16';
-    state =
-        ModelConfiguration(scaleOnInfinitePrecision: scaleOnInfinitePrecision);
+    final scale = _getPreference(prefs, 'scaleOnInfinitePrecision', '16');
+    state = ModelConfiguration(scaleOnInfinitePrecision: scale);
   }
 
   Future<void> saveConfiguration(ModelConfiguration config) async {
