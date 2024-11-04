@@ -25,6 +25,8 @@ dependencies:
   path: ^1.9.0
   go_router: ^14.3.0
   freezed_annotation: ^2.4.4
+  flutter_localizations:
+    sdk: flutter
 
 dev_dependencies:
   flutter_test:
@@ -37,7 +39,7 @@ dev_dependencies:
 
 flutter:
   fonts:
-    - family: Murecho
+    - family: Noto_Sans_JP
       fonts:
-        - asset: assets/fonts/Murecho/static/Murecho-Regular.ttf
+        - asset: assets/fonts/Noto_Sans_JP/static/NotoSansJP.ttf
   uses-material-design: true

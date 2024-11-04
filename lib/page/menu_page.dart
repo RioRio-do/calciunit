@@ -1,3 +1,5 @@
+import 'package:flutter/services.dart';
+
 import '../app_route.dart';
 import '../logic/data.dart';
 import 'package:flutter/material.dart';
@@ -11,14 +13,24 @@ class MenuPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('CalciUnit'),
+        title: const Text('Calciunit'),
         centerTitle: true,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              GoRouter.of(context).go(AppRoute.config.path);
-            },
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8.w),
+            child: IconButton(
+              icon: Icon(
+                Icons.settings,
+                size: 28.w, // アイコンサイズを大きく
+              ),
+              style: IconButton.styleFrom(
+                minimumSize: Size(48.w, 48.h), // タップ領域を広げる
+              ),
+              onPressed: () {
+                HapticFeedback.lightImpact(); // 触覚フィードバックを追加
+                GoRouter.of(context).go(AppRoute.config.path);
+              },
+            ),
           ),
         ],
       ),
@@ -27,82 +39,45 @@ class MenuPage extends StatelessWidget {
         child: Column(
           children: [
             SizedBox(height: 16.h),
-            // ヘッダーセクション
-            Center(
-              child: Column(
-                children: [
-                  Icon(
-                    Icons.calculate_outlined,
-                    size: 64.w,
-                    color: Theme.of(context).primaryColor,
-                  ),
-                  SizedBox(height: 16.h),
-                  Text(
-                    'Select Unit Type',
-                    style: TextStyle(
-                      fontSize: 24.sp,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey[800],
-                    ),
-                  ),
-                  SizedBox(height: 8.h),
-                  Text(
-                    '単位の種類を選択してください',
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 32.h),
-            // 単位一覧グリッド
-            Expanded(
-              child: GridView.builder(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 16.w,
-                  mainAxisSpacing: 16.w,
-                  childAspectRatio: 1.5,
-                ),
-                itemCount: Units.values.length,
-                itemBuilder: (context, index) {
-                  final unit = Units.values[index];
-                  return InkWell(
-                    onTap: () => GoRouter.of(context).go('/$index'),
-                    child: Card(
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.w),
+            ...Units.values.map((unit) => Padding(
+                  padding: EdgeInsets.only(bottom: 16.h), // 間隔を広げる
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.zero,
                       ),
-                      child: Container(
-                        padding: EdgeInsets.all(16.w),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              _getIconForUnit(unit),
-                              size: 32.w,
-                              color: Theme.of(context).primaryColor,
-                            ),
-                            SizedBox(height: 8.h),
-                            Text(
-                              unit.name,
-                              style: TextStyle(
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 24.w, // 左右のパディングを増やす
+                        vertical: 20.h, // 上下のパディングを増やす
+                      ),
+                      minimumSize: Size.fromHeight(72.h), // 最小の高さを設定
+                    ),
+                    onPressed: () {
+                      context.go('/${unit.index}');
+                    },
+                    child: Row(
+                      children: [
+                        Icon(
+                          _getIconForUnit(unit),
+                          size: 32.w, // アイコンを大きく
                         ),
-                      ),
+                        SizedBox(width: 20.w), // アイコンとテキストの間隔を広げる
+                        Text(
+                          unit.name,
+                          style: TextStyle(
+                            fontSize: 18.sp, // フォントサイズを大きく
+                            fontWeight: FontWeight.w500, // やや���く
+                          ),
+                        ),
+                        const Spacer(),
+                        Icon(
+                          Icons.arrow_forward_ios,
+                          size: 20.w, // 矢印も少し大きく
+                        ),
+                      ],
                     ),
-                  );
-                },
-              ),
-            ),
+                  ),
+                )),
           ],
         ),
       ),

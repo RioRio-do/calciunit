@@ -69,6 +69,23 @@ class DynamicPage extends HookConsumerWidget {
             floating: true,
             snap: true,
             actions: [
+              if (isEdit.value) // 編集モード時のみ表示
+                IconButton(
+                  icon: const Icon(Icons.select_all),
+                  onPressed: () {
+                    // すべてのアイテムが選択されているか確認
+                    bool allSelected = items.value
+                        .every((item) => selectedItems.value.contains(item));
+
+                    if (allSelected) {
+                      // 全て選択されている場合は選択解除
+                      selectedItems.value = {};
+                    } else {
+                      // そうでない場合は全選択
+                      selectedItems.value = Set.from(items.value);
+                    }
+                  },
+                ),
               IconButton(
                 icon: const Icon(Icons.library_books),
                 onPressed: () {
@@ -150,9 +167,8 @@ class DynamicPage extends HookConsumerWidget {
                         showModalBottomSheet(
                           context: context,
                           isScrollControlled: true,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.vertical(
-                                top: Radius.circular(16.w)),
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.zero, // 角を四角く
                           ),
                           builder: (BuildContext context) {
                             return AddItemsBottomSheet(
@@ -167,8 +183,9 @@ class DynamicPage extends HookConsumerWidget {
                       },
                 style: ElevatedButton.styleFrom(
                   padding: EdgeInsets.symmetric(vertical: 16.w),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.w),
+                  shape: const RoundedRectangleBorder(
+                    // 角を四角く
+                    borderRadius: BorderRadius.zero,
                   ),
                   // 編集中は半透明にして無効化状態を視覚的に表現
                   disabledBackgroundColor: Colors.grey[300],

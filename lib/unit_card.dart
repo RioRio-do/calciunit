@@ -125,8 +125,9 @@ class UnitCard extends ConsumerWidget {
       padding: EdgeInsets.all(8.w),
       child: Material(
         elevation: 1.w,
-        borderRadius: BorderRadius.circular(12.w),
-        color: Colors.white,
+        borderRadius: BorderRadius.zero, // 角を四角く
+        color:
+            (isEdit && (isSelected ?? false)) ? Colors.blue[50] : Colors.white,
         child: GestureDetector(
           onLongPressStart: (isEdit && (isSelected ?? false))
               ? (LongPressStartDetails details) {
@@ -155,17 +156,19 @@ class UnitCard extends ConsumerWidget {
                       ),
                       PopupMenuItem(
                         onTap: () async {
-                          Navigator.of(context).pop();
-                          if (context.mounted) {
-                            await showDialog(
-                              context: context,
-                              builder: (context) => DeckDialog(
-                                selectedItems: selectedItems,
-                                unitData: unitData,
-                                unitId: unitId,
-                              ),
-                            );
-                          }
+                          // ここでは何もせず、後でダイアログを表示
+                          Future.delayed(Duration.zero, () async {
+                            if (context.mounted) {
+                              await showDialog(
+                                context: context,
+                                builder: (context) => DeckDialog(
+                                  selectedItems: selectedItems,
+                                  unitData: unitData,
+                                  unitId: unitId,
+                                ),
+                              );
+                            }
+                          });
                         },
                         child: Row(
                           children: [
@@ -180,7 +183,7 @@ class UnitCard extends ConsumerWidget {
                 }
               : null,
           child: InkWell(
-            borderRadius: BorderRadius.circular(12.w),
+            borderRadius: BorderRadius.zero, // 角を四角く
             onTap: isEdit
                 ? () {
                     if (onSelect != null) {
@@ -200,9 +203,9 @@ class UnitCard extends ConsumerWidget {
                   : Container(
                       width: 36.w,
                       height: 36.w,
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: Colors.grey,
-                        borderRadius: BorderRadius.circular(8.w),
+                        borderRadius: BorderRadius.zero, // 角を四角く
                       ),
                       alignment: Alignment.center,
                       child: Text(
