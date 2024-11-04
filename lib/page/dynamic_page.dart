@@ -1,6 +1,8 @@
 import 'package:calciunit/add_item_bottom_sheet.dart';
 import 'package:calciunit/logic/data.dart';
+import 'package:calciunit/logic/units_data_provider.dart';
 import 'package:calciunit/sav/model_configuration_notifier.dart';
+import 'package:calciunit/sav/model_custom_unit_notifier.dart';
 import 'package:calciunit/unit_card.dart';
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +25,7 @@ class DynamicPage extends HookConsumerWidget {
     final selectedItems = useState<Set<int>>({});
     final scrollController = useScrollController();
     final config = ref.watch(modelConfigurationNotifierProvider);
+    final unitData = ref.watch(unitsDataNotifierProvider(pageId)); // 追加
 
     // デッキアイテムを追加するメソッドの最適化
     void addDeckItems(List<int> deckItems) {
@@ -61,8 +64,9 @@ class DynamicPage extends HookConsumerWidget {
         slivers: [
           _buildAppBar(
               unit, isEdit, items, selectedItems, context, addDeckItems),
-          _buildReorderableList(unit, items, isEdit, selectedItems, config),
-          _buildAddItemButton(context, isEdit, unit, items),
+          _buildReorderableList(
+              unitData, items, isEdit, selectedItems, config, ref), // 更新
+          _buildAddItemButton(context, isEdit, unitData, items), // 更新
         ],
       ),
     );
@@ -107,54 +111,66 @@ class DynamicPage extends HookConsumerWidget {
     );
   }
 
-  // リオーダブルリストを構築するヘルパーメソッド
+  // リオーダブルリストを構築するヘルパーメソッドを更新
   SliverReorderableList _buildReorderableList(
-    Units unit,
+    List<List<String>> unitData, // 更新
     ValueNotifier<List<int>> items,
     ValueNotifier<bool> isEdit,
     ValueNotifier<Set<int>> selectedItems,
     dynamic config,
+    WidgetRef ref, // 追加
   ) {
+    final unitsDataNotifier =
+        ref.read(unitsDataNotifierProvider(pageId).notifier);
+
     return SliverReorderableList(
       itemBuilder: (BuildContext context, int index) {
         if (index >= items.value.length) {
           return Center(child: Text('無効なインデックス: $index'));
         }
+        final itemIndex = items.value[index];
+        final isCustom = unitsDataNotifier.isCustomUnit(itemIndex);
+        final customUnitId = unitsDataNotifier.getCustomUnitId(itemIndex);
+
         return ReorderableDelayedDragStartListener(
           key: ValueKey(items.value[index]),
           index: index,
           child: Material(
             child: UnitCard(
-              title: unit.data[items.value[index]][UnitsColumn.displayName.v],
-              leadingText: unit.data[items.value[index]]
-                  [UnitsColumn.abbreviation.v],
+              title: unitData[itemIndex][UnitsColumn.displayName.v],
+              leadingText: unitData[itemIndex][UnitsColumn.abbreviation.v],
               constanceValue: dataFormatting(
-                unit.data[items.value[index]][UnitsColumn.constant.v],
+                unitData[itemIndex][UnitsColumn.constant.v],
                 config.scaleOnInfinitePrecision,
               ),
               scaleOnInfinitePrecision: config.scaleOnInfinitePrecision,
               isEdit: isEdit.value,
-              isSelected: selectedItems.value.contains(items.value[index]),
+              isSelected: selectedItems.value.contains(itemIndex),
               onSelect: (selected) {
                 if (selected ?? false) {
-                  selectedItems.value = {
-                    ...selectedItems.value,
-                    items.value[index]
-                  };
+                  selectedItems.value = {...selectedItems.value, itemIndex};
                 } else {
                   selectedItems.value = {...selectedItems.value}
-                    ..remove(items.value[index]);
+                    ..remove(itemIndex);
                 }
               },
               selectedItems: selectedItems.value,
               onDelete: (selectedIndices) {
+                // カスタム単位の場合は、完全に削除する
+                if (isCustom && customUnitId != null) {
+                  ref
+                      .read(customUnitNotifierProvider.notifier)
+                      .deleteUnit(customUnitId);
+                }
                 items.value = items.value
                     .where((item) => !selectedIndices.contains(item))
                     .toList();
                 selectedItems.value = {};
                 isEdit.value = false;
               },
-              unitData: unit.data,
+              isCustomUnit: isCustom, // 追加
+              customUnitId: customUnitId, // 追加
+              unitData: unitData,
               unitId: pageId,
             ),
           ),
@@ -171,11 +187,11 @@ class DynamicPage extends HookConsumerWidget {
     );
   }
 
-  // アイテム追加ボタンを構築するヘルパーメソッド
+  // アイテム追加ボタンを構築するヘルパーメソッドを更新
   SliverToBoxAdapter _buildAddItemButton(
     BuildContext context,
     ValueNotifier<bool> isEdit,
-    Units unit,
+    List<List<String>> unitData, // 更新
     ValueNotifier<List<int>> items,
   ) {
     return SliverToBoxAdapter(
@@ -194,10 +210,11 @@ class DynamicPage extends HookConsumerWidget {
                     builder: (BuildContext context) {
                       return AddItemsBottomSheet(
                         currentItems: items.value,
-                        unitData: unit.data,
+                        unitData: unitData,
                         onAdd: (newItems) {
                           items.value = [...items.value, ...newItems];
                         },
+                        pageId: pageId, // 追加
                       );
                     },
                   );

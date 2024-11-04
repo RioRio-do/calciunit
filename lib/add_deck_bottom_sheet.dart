@@ -30,11 +30,9 @@ class AddDeckBottomSheet extends HookConsumerWidget {
         .where((i) {
       final displayName = data[i][UnitsColumn.displayName.v].toLowerCase();
       final abbreviation = data[i][UnitsColumn.abbreviation.v].toLowerCase();
-      final category = data[i][UnitsColumn.category.v].toLowerCase();
 
       return displayName.contains(searchLower) ||
-          abbreviation.contains(searchLower) ||
-          category.contains(searchLower);
+          abbreviation.contains(searchLower);
     }).toList();
   }
 
@@ -131,13 +129,11 @@ class AddDeckBottomSheet extends HookConsumerWidget {
                 final displayName = unitData[index][UnitsColumn.displayName.v];
                 final abbreviation =
                     unitData[index][UnitsColumn.abbreviation.v];
-                final category = unitData[index][UnitsColumn.category.v];
 
                 if (searchText.value.isNotEmpty) {
                   final searchLower = searchText.value.toLowerCase();
                   if (!displayName.toLowerCase().contains(searchLower) &&
-                      !abbreviation.toLowerCase().contains(searchLower) &&
-                      !category.toLowerCase().contains(searchLower)) {
+                      !abbreviation.toLowerCase().contains(searchLower)) {
                     return const SizedBox.shrink();
                   }
                 }

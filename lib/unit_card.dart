@@ -1,3 +1,6 @@
+import 'package:calciunit/custom_unit_dialog.dart';
+import 'package:calciunit/sav/model_custom_unit_notifier.dart';
+
 import 'input_value_state.dart';
 import 'logic/units_cov.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +21,8 @@ class UnitCard extends ConsumerWidget {
   final Function(Set<int>)? onDelete;
   final List<List<String>> unitData;
   final int unitId; // 追加
+  final bool isCustomUnit;
+  final String? customUnitId;
 
   const UnitCard({
     super.key,
@@ -32,6 +37,8 @@ class UnitCard extends ConsumerWidget {
     this.onDelete,
     required this.unitData,
     required this.unitId, // 追加
+    this.isCustomUnit = false,
+    this.customUnitId,
   });
 
   @override
@@ -224,6 +231,26 @@ class UnitCard extends ConsumerWidget {
             fontSize: 12.sp,
           ),
         ),
+        trailing: isCustomUnit
+            ? IconButton(
+                icon: const Icon(Icons.edit),
+                onPressed: () {
+                  if (customUnitId != null) {
+                    final customUnit = ref
+                        .read(customUnitNotifierProvider)
+                        .units
+                        .firstWhere((u) => u.id == customUnitId);
+                    showDialog(
+                      context: context,
+                      builder: (context) => CustomUnitDialog(
+                        editUnit: customUnit,
+                        unitType: unitId,
+                      ),
+                    );
+                  }
+                },
+              )
+            : null,
       );
     }
 
