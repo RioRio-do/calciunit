@@ -20,44 +20,9 @@ class ModelUnitsDecksNotifier extends _$ModelUnitsDecksNotifier {
     return const ModelUnitsDecks();
   }
 
-  Future<void> loadDecks() async {
-    final prefs = await SharedPreferences.getInstance();
-    final decksJson = prefs.getString('unitsDecks');
-    if (decksJson != null) {
-      final Map<String, dynamic> decksMap = json.decode(decksJson);
-      final Map<String, ({int unitId, List<int> items})> decks = decksMap.map(
-        (key, value) => MapEntry(
-          key,
-          (
-            unitId: value['unitId'] as int,
-            items: (value['items'] as List<dynamic>).cast<int>(),
-          ),
-        ),
-      );
-      state = ModelUnitsDecks(decks: decks);
-    }
-  }
-
-  Future<void> addDeck(String name, int unitId, List<int> items) async {
-    final prefs = await SharedPreferences.getInstance();
-    final existingJson = prefs.getString('unitsDecks');
-    Map<String, ({int unitId, List<int> items})> mergedDecks = {};
-
-    if (existingJson != null) {
-      final Map<String, dynamic> existingMap = json.decode(existingJson);
-      mergedDecks = existingMap.map(
-        (key, value) => MapEntry(
-          key,
-          (
-            unitId: value['unitId'] as int,
-            items: (value['items'] as List<dynamic>).cast<int>(),
-          ),
-        ),
-      );
-    }
-    mergedDecks[name] = (unitId: unitId, items: items);
-    state = ModelUnitsDecks(decks: mergedDecks);
-    final Map<String, dynamic> serializedDecks = mergedDecks.map(
+  Map<String, dynamic> _serializeDecks(
+      Map<String, ({int unitId, List<int> items})> decks) {
+    return decks.map(
       (key, value) => MapEntry(
         key,
         {
@@ -66,7 +31,41 @@ class ModelUnitsDecksNotifier extends _$ModelUnitsDecksNotifier {
         },
       ),
     );
-    await prefs.setString('unitsDecks', json.encode(serializedDecks));
+  }
+
+  Map<String, ({int unitId, List<int> items})> _deserializeDecks(
+      String decksJson) {
+    final Map<String, dynamic> decksMap = json.decode(decksJson);
+    return decksMap.map(
+      (key, value) => MapEntry(
+        key,
+        (
+          unitId: value['unitId'] as int,
+          items: (value['items'] as List<dynamic>).cast<int>(),
+        ),
+      ),
+    );
+  }
+
+  Future<void> loadDecks() async {
+    final prefs = await SharedPreferences.getInstance();
+    final decksJson = prefs.getString('unitsDecks');
+    if (decksJson != null) {
+      final decks = _deserializeDecks(decksJson);
+      state = ModelUnitsDecks(decks: decks);
+    }
+  }
+
+  Future<void> addDeck(String name, int unitId, List<int> items) async {
+    final prefs = await SharedPreferences.getInstance();
+    final existingJson = prefs.getString('unitsDecks');
+    Map<String, ({int unitId, List<int> items})> mergedDecks =
+        existingJson != null ? _deserializeDecks(existingJson) : {};
+
+    mergedDecks[name] = (unitId: unitId, items: items);
+    state = ModelUnitsDecks(decks: mergedDecks);
+    await prefs.setString(
+        'unitsDecks', json.encode(_serializeDecks(mergedDecks)));
   }
 
   Future<void> removeDeck(String name) async {
@@ -75,15 +74,6 @@ class ModelUnitsDecksNotifier extends _$ModelUnitsDecksNotifier {
     newDecks.remove(name);
     state = state.copyWith(decks: newDecks);
     final prefs = await SharedPreferences.getInstance();
-    final Map<String, dynamic> serializedDecks = newDecks.map(
-      (key, value) => MapEntry(
-        key,
-        {
-          'unitId': value.unitId,
-          'items': value.items,
-        },
-      ),
-    );
-    await prefs.setString('unitsDecks', json.encode(serializedDecks));
+    await prefs.setString('unitsDecks', json.encode(_serializeDecks(newDecks)));
   }
 }

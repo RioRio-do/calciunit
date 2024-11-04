@@ -12,37 +12,46 @@ import 'page/menu_page.dart';
 import 'page/dynamic_page.dart';
 import 'app_route.dart';
 
-List<GoRoute> generateRoutes(int count) {
-  const transitionDuration = Duration(milliseconds: 100);
+// 共通のトランジションビルダー関数を追加
+Widget _buildTransition(BuildContext context, Animation<double> animation,
+    Animation<double> secondaryAnimation, Widget child, Offset beginOffset) {
+  final tween = Tween(begin: beginOffset, end: Offset.zero);
+  final curvedAnimation = CurvedAnimation(
+    parent: animation,
+    curve: Curves.easeInOut,
+  );
+  final offsetAnimation = curvedAnimation.drive(tween);
 
+  return SlideTransition(
+    position: offsetAnimation,
+    child: child,
+  );
+}
+
+// カスタムトランジションページ作成関数を追加
+CustomTransitionPage _createTransitionPage(Widget child, Offset beginOffset) {
+  const transitionDuration = Duration(milliseconds: 100);
+  return CustomTransitionPage(
+    key: null, // 必要に応じてキーを設定
+    child: child,
+    transitionDuration: transitionDuration,
+    reverseTransitionDuration: transitionDuration,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      return _buildTransition(
+          context, animation, secondaryAnimation, child, beginOffset);
+    },
+  );
+}
+
+List<GoRoute> generateRoutes(int count) {
   return List.generate(
     count,
     (index) {
       return GoRoute(
         path: '$index',
         pageBuilder: (context, state) {
-          return CustomTransitionPage(
-            key: state.pageKey,
-            child: DynamicPage(pageId: index),
-            transitionDuration: transitionDuration,
-            reverseTransitionDuration: transitionDuration, // 戻る時の時間を追加
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(1.0, 0.0);
-              const end = Offset.zero;
-              final tween = Tween(begin: begin, end: end);
-              final curvedAnimation = CurvedAnimation(
-                parent: animation,
-                curve: Curves.easeInOut,
-              );
-              final offsetAnimation = curvedAnimation.drive(tween);
-
-              return SlideTransition(
-                position: offsetAnimation,
-                child: child,
-              );
-            },
-          );
+          return _createTransitionPage(
+              DynamicPage(pageId: index), const Offset(1.0, 0.0));
         },
       );
     },
@@ -52,36 +61,14 @@ List<GoRoute> generateRoutes(int count) {
 final goRouterProvider = Provider<GoRouter>(
   (ref) {
     return GoRouter(
-      initialLocation: AppRoute.menu.path, //初めに移動するページ
-
+      initialLocation: AppRoute.menu.path,
       routes: [
         GoRoute(
           path: AppRoute.menu.path,
           name: AppRoute.menu.name,
           pageBuilder: (context, state) {
-            return CustomTransitionPage(
-              key: state.pageKey,
-              child: const MenuPage(),
-              transitionDuration: const Duration(milliseconds: 100),
-              reverseTransitionDuration:
-                  const Duration(milliseconds: 100), // 戻る時の時間を追加
-              transitionsBuilder:
-                  (context, animation, secondaryAnimation, child) {
-                const begin = Offset(-1.0, 0.0);
-                const end = Offset.zero;
-                final tween = Tween(begin: begin, end: end);
-                final curvedAnimation = CurvedAnimation(
-                  parent: animation,
-                  curve: Curves.easeInOut,
-                );
-                final offsetAnimation = curvedAnimation.drive(tween);
-
-                return SlideTransition(
-                  position: offsetAnimation,
-                  child: child,
-                );
-              },
-            );
+            return _createTransitionPage(
+                const MenuPage(), const Offset(-1.0, 0.0));
           },
           routes: [
             GoRoute(

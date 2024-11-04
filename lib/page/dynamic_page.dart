@@ -24,33 +24,28 @@ class DynamicPage extends HookConsumerWidget {
     final scrollController = useScrollController();
     final config = ref.watch(modelConfigurationNotifierProvider);
 
-    // 新しいメソッドを追加
+    // デッキアイテムを追加するメソッドの最適化
     void addDeckItems(List<int> deckItems) {
-      final Set<int> uniqueItems = {...items.value};
-      final List<int> newItems = items.value.toList();
+      final currentItems = items.value.toList();
 
-      // 既存のアイテムで、デッキのアイテムと重複するものを削除
-      for (final item in deckItems) {
-        if (uniqueItems.contains(item)) {
-          newItems.removeWhere((existing) => existing == item);
+      // 重複するアイテムを削除
+      currentItems.removeWhere((item) => deckItems.contains(item));
+
+      // 挿入位置を決定
+      int insertPosition = currentItems.length;
+      for (final item in deckItems.reversed) {
+        final index = currentItems.indexOf(item);
+        if (index != -1) {
+          insertPosition = index;
+          break;
         }
       }
 
-      // デッキのアイテムを追加する位置を決定
-      // （最後に見つかった重複アイテムの位置、または末尾）
-      int insertPosition = 0;
-      for (final item in deckItems) {
-        final existingIndex = newItems.indexOf(item);
-        if (existingIndex != -1) {
-          insertPosition = existingIndex;
-        }
-      }
+      // アイテムを挿入
+      currentItems.insertAll(insertPosition, deckItems);
 
-      // デッキのアイテムを挿入
-      newItems.insertAll(insertPosition, deckItems);
-
-      // 重複を除去
-      items.value = newItems.toSet().toList();
+      // 重複を除去して状態を更新
+      items.value = currentItems.toSet().toList();
     }
 
     return Scaffold(
@@ -64,157 +59,184 @@ class DynamicPage extends HookConsumerWidget {
       body: CustomScrollView(
         controller: scrollController,
         slivers: [
-          SliverAppBar(
-            title: Text(unit.name),
-            floating: true,
-            snap: true,
-            actions: [
-              if (isEdit.value) // 編集モード時のみ表示
-                IconButton(
-                  icon: const Icon(Icons.select_all),
-                  onPressed: () {
-                    // すべてのアイテムが選択されているか確認
-                    bool allSelected = items.value
-                        .every((item) => selectedItems.value.contains(item));
+          _buildAppBar(
+              unit, isEdit, items, selectedItems, context, addDeckItems),
+          _buildReorderableList(unit, items, isEdit, selectedItems, config),
+          _buildAddItemButton(context, isEdit, unit, items),
+        ],
+      ),
+    );
+  }
 
-                    if (allSelected) {
-                      // 全て選択されている場合は選択解除
-                      selectedItems.value = {};
-                    } else {
-                      // そうでない場合は全選択
-                      selectedItems.value = Set.from(items.value);
-                    }
-                  },
-                ),
-              IconButton(
-                icon: const Icon(Icons.library_books),
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => DeckListDialog(
-                      unitId: pageId,
-                      onDeckSelect: addDeckItems, // コールバックを追加
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-          SliverReorderableList(
-            itemBuilder: (BuildContext context, int index) {
-              if (index >= items.value.length) {
-                return Center(child: Text('Invalid index: $index'));
-              }
-              return ReorderableDelayedDragStartListener(
-                key: ValueKey(items.value[index]),
-                index: index,
-                child: Material(
-                  child: UnitCard(
-                    title: unit.data[items.value[index]]
-                        [UnitsColumn.displayName.v],
-                    leadingText: unit.data[items.value[index]]
-                        [UnitsColumn.abbreviation.v],
-                    constanceValue: dataFormatting(
-                      unit.data[items.value[index]][UnitsColumn.constant.v],
-                      config.scaleOnInfinitePrecision,
-                    ),
-                    scaleOnInfinitePrecision: config.scaleOnInfinitePrecision,
-                    isEdit: isEdit.value,
-                    isSelected:
-                        selectedItems.value.contains(items.value[index]),
-                    onSelect: (selected) {
-                      if (selected ?? false) {
-                        selectedItems.value = {
-                          ...selectedItems.value,
-                          items.value[index]
-                        };
-                      } else {
-                        selectedItems.value = {...selectedItems.value}
-                          ..remove(items.value[index]);
-                      }
-                    },
-                    selectedItems: selectedItems.value,
-                    onDelete: (selectedIndices) {
-                      items.value = items.value
-                          .where((item) => !selectedIndices.contains(item))
-                          .toList();
-                      selectedItems.value = {};
-                      isEdit.value = false;
-                    },
-                    unitData: unit.data,
-                    unitId: pageId, // この行を追加
-                  ),
-                ),
-              );
-            },
-            itemCount: items.value.length,
-            onReorder: (int oldIndex, int newIndex) {
-              if (oldIndex < newIndex) {
-                newIndex -= 1;
-              }
-              final item = items.value.removeAt(oldIndex);
-              items.value.insert(newIndex, item);
+  // アプリバーを構築するヘルパーメソッド
+  SliverAppBar _buildAppBar(
+    Units unit,
+    ValueNotifier<bool> isEdit,
+    ValueNotifier<List<int>> items,
+    ValueNotifier<Set<int>> selectedItems,
+    BuildContext context,
+    Function(List<int>) addDeckItems,
+  ) {
+    return SliverAppBar(
+      title: Text(unit.name),
+      floating: true,
+      snap: true,
+      actions: [
+        if (isEdit.value)
+          IconButton(
+            icon: const Icon(Icons.select_all),
+            onPressed: () {
+              bool allSelected = items.value
+                  .every((item) => selectedItems.value.contains(item));
+              selectedItems.value = allSelected ? {} : Set.from(items.value);
             },
           ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.all(16.w),
-              child: ElevatedButton(
-                onPressed: isEdit.value
-                    ? null
-                    : () {
-                        // 編集中は無効化
-                        showModalBottomSheet(
-                          context: context,
-                          isScrollControlled: true,
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.zero, // 角を四角く
-                          ),
-                          builder: (BuildContext context) {
-                            return AddItemsBottomSheet(
-                              currentItems: items.value,
-                              unitData: unit.data,
-                              onAdd: (newItems) {
-                                items.value = [...items.value, ...newItems];
-                              },
-                            );
-                          },
-                        );
-                      },
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 16.w),
-                  shape: const RoundedRectangleBorder(
-                    // 角を四角く
-                    borderRadius: BorderRadius.zero,
-                  ),
-                  // 編集中は半透明にして無効化状態を視覚的に表現
-                  disabledBackgroundColor: Colors.grey[300],
-                  disabledForegroundColor: Colors.grey[500],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.add),
-                    SizedBox(width: 8.w),
-                    const Text('アイテムを追加'),
-                  ],
-                ),
+        IconButton(
+          icon: const Icon(Icons.library_books),
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (context) => DeckListDialog(
+                unitId: pageId,
+                onDeckSelect: addDeckItems,
               ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  // リオーダブルリストを構築するヘルパーメソッド
+  SliverReorderableList _buildReorderableList(
+    Units unit,
+    ValueNotifier<List<int>> items,
+    ValueNotifier<bool> isEdit,
+    ValueNotifier<Set<int>> selectedItems,
+    dynamic config,
+  ) {
+    return SliverReorderableList(
+      itemBuilder: (BuildContext context, int index) {
+        if (index >= items.value.length) {
+          return Center(child: Text('無効なインデックス: $index'));
+        }
+        return ReorderableDelayedDragStartListener(
+          key: ValueKey(items.value[index]),
+          index: index,
+          child: Material(
+            child: UnitCard(
+              title: unit.data[items.value[index]][UnitsColumn.displayName.v],
+              leadingText: unit.data[items.value[index]]
+                  [UnitsColumn.abbreviation.v],
+              constanceValue: dataFormatting(
+                unit.data[items.value[index]][UnitsColumn.constant.v],
+                config.scaleOnInfinitePrecision,
+              ),
+              scaleOnInfinitePrecision: config.scaleOnInfinitePrecision,
+              isEdit: isEdit.value,
+              isSelected: selectedItems.value.contains(items.value[index]),
+              onSelect: (selected) {
+                if (selected ?? false) {
+                  selectedItems.value = {
+                    ...selectedItems.value,
+                    items.value[index]
+                  };
+                } else {
+                  selectedItems.value = {...selectedItems.value}
+                    ..remove(items.value[index]);
+                }
+              },
+              selectedItems: selectedItems.value,
+              onDelete: (selectedIndices) {
+                items.value = items.value
+                    .where((item) => !selectedIndices.contains(item))
+                    .toList();
+                selectedItems.value = {};
+                isEdit.value = false;
+              },
+              unitData: unit.data,
+              unitId: pageId,
             ),
           ),
-        ],
+        );
+      },
+      itemCount: items.value.length,
+      onReorder: (int oldIndex, int newIndex) {
+        if (oldIndex < newIndex) {
+          newIndex -= 1;
+        }
+        final item = items.value.removeAt(oldIndex);
+        items.value.insert(newIndex, item);
+      },
+    );
+  }
+
+  // アイテム追加ボタンを構築するヘルパーメソッド
+  SliverToBoxAdapter _buildAddItemButton(
+    BuildContext context,
+    ValueNotifier<bool> isEdit,
+    Units unit,
+    ValueNotifier<List<int>> items,
+  ) {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: EdgeInsets.all(16.w),
+        child: ElevatedButton(
+          onPressed: isEdit.value
+              ? null
+              : () {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.zero,
+                    ),
+                    builder: (BuildContext context) {
+                      return AddItemsBottomSheet(
+                        currentItems: items.value,
+                        unitData: unit.data,
+                        onAdd: (newItems) {
+                          items.value = [...items.value, ...newItems];
+                        },
+                      );
+                    },
+                  );
+                },
+          style: ElevatedButton.styleFrom(
+            padding: EdgeInsets.symmetric(vertical: 16.w),
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.zero,
+            ),
+            disabledBackgroundColor: Colors.grey[300],
+            disabledForegroundColor: Colors.grey[500],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.add),
+              SizedBox(width: 8.w),
+              const Text('アイテムを追加'),
+            ],
+          ),
+        ),
       ),
     );
   }
 }
 
+// データフォーマット用ユーティリティ関数
 String dataFormatting(String data, String scaleOnInfinitePrecision) {
   if (data.contains('/')) {
-    final output = Rational(BigInt.parse(data.split('/').first),
-            BigInt.parse(data.split('/').last))
+    final parts = data.split('/');
+    final rational = Rational(
+      BigInt.parse(parts.first),
+      BigInt.parse(parts.last),
+    );
+    return rational
         .toDecimal(
-            scaleOnInfinitePrecision: int.tryParse(scaleOnInfinitePrecision));
-    return output.toString();
+          scaleOnInfinitePrecision: int.tryParse(scaleOnInfinitePrecision),
+        )
+        .toString();
   }
   return data;
 }

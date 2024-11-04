@@ -38,13 +38,15 @@ class UnitCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final input = ref.watch(inputValueProvider);
 
-    Future<void> editDialog(BuildContext context) async {
+    // 編集ダイアログを表示するヘルパーメソッド
+    Future<void> showEditDialog(BuildContext context, WidgetRef ref) async {
       final TextEditingController controller = TextEditingController(
         text: unitCov(
-            fromS: '1',
-            toS: constanceValue,
-            valueS: input,
-            scaleOnInfinitePrecisionS: scaleOnInfinitePrecision),
+          fromS: '1',
+          toS: constanceValue,
+          valueS: input,
+          scaleOnInfinitePrecisionS: scaleOnInfinitePrecision,
+        ),
       );
       FocusNode focusNode = FocusNode();
       controller.selection = TextSelection(
@@ -52,7 +54,7 @@ class UnitCard extends ConsumerWidget {
         extentOffset: controller.text.length,
       );
 
-      return showDialog<void>(
+      await showDialog<void>(
         context: context,
         barrierDismissible: false,
         builder: (BuildContext context) {
@@ -78,12 +80,14 @@ class UnitCard extends ConsumerWidget {
                       TextButton(
                         onPressed: () {
                           Clipboard.setData(ClipboardData(
-                              text: unitCov(
-                                  fromS: '1',
-                                  toS: constanceValue,
-                                  valueS: input,
-                                  scaleOnInfinitePrecisionS:
-                                      scaleOnInfinitePrecision)));
+                            text: unitCov(
+                              fromS: '1',
+                              toS: constanceValue,
+                              valueS: input,
+                              scaleOnInfinitePrecisionS:
+                                  scaleOnInfinitePrecision,
+                            ),
+                          ));
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text('クリップボードにコピーされました')),
                           );
@@ -99,11 +103,11 @@ class UnitCard extends ConsumerWidget {
                       TextButton(
                         onPressed: () {
                           String? newValue = unitCov(
-                              fromS: constanceValue,
-                              toS: '1',
-                              valueS: controller.text,
-                              scaleOnInfinitePrecisionS:
-                                  scaleOnInfinitePrecision);
+                            fromS: constanceValue,
+                            toS: '1',
+                            valueS: controller.text,
+                            scaleOnInfinitePrecisionS: scaleOnInfinitePrecision,
+                          );
                           ref.read(inputValueProvider.notifier).set(newValue);
                           Navigator.of(context).pop();
                         },
@@ -121,6 +125,108 @@ class UnitCard extends ConsumerWidget {
       });
     }
 
+    // 長押しメニューを表示するヘルパーメソッド
+    void showContextMenu(
+        LongPressStartDetails details, BuildContext context, WidgetRef ref) {
+      showMenu(
+        context: context,
+        position: RelativeRect.fromLTRB(
+          details.globalPosition.dx,
+          details.globalPosition.dy,
+          details.globalPosition.dx,
+          details.globalPosition.dy,
+        ),
+        items: [
+          PopupMenuItem(
+            onTap: () {
+              if (onDelete != null) {
+                onDelete!(selectedItems);
+              }
+            },
+            child: Row(
+              children: [
+                const Icon(Icons.delete, color: Colors.red),
+                SizedBox(width: 8.w),
+                const Text('削除'),
+              ],
+            ),
+          ),
+          PopupMenuItem(
+            onTap: () async {
+              Future.delayed(Duration.zero, () async {
+                if (context.mounted) {
+                  await showDialog(
+                    context: context,
+                    builder: (context) => DeckDialog(
+                      selectedItems: selectedItems,
+                      unitData: unitData,
+                      unitId: unitId,
+                    ),
+                  );
+                }
+              });
+            },
+            child: Row(
+              children: [
+                const Icon(Icons.library_books),
+                SizedBox(width: 8.w),
+                const Text('デッキ'),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+
+    // ListTileを構築するヘルパーメソッド
+    Widget buildListTile(BuildContext context, WidgetRef ref) {
+      return ListTile(
+        contentPadding: EdgeInsets.symmetric(horizontal: 16.w),
+        leading: isEdit
+            ? Checkbox(
+                value: isSelected,
+                onChanged: onSelect,
+              )
+            : Container(
+                width: 36.w,
+                height: 36.w,
+                decoration: const BoxDecoration(
+                  color: Colors.grey,
+                  borderRadius: BorderRadius.zero, // 角を四角く
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  leadingText,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12.sp,
+                  ),
+                ),
+              ),
+        title: Text(
+          unitCov(
+            fromS: '1',
+            toS: constanceValue,
+            valueS: input,
+            scaleOnInfinitePrecisionS: scaleOnInfinitePrecision,
+          ),
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 16.sp,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        subtitle: Text(
+          title,
+          style: TextStyle(
+            color: Colors.black54,
+            fontSize: 12.sp,
+          ),
+        ),
+      );
+    }
+
     return Padding(
       padding: EdgeInsets.all(8.w),
       child: Material(
@@ -131,55 +237,7 @@ class UnitCard extends ConsumerWidget {
         child: GestureDetector(
           onLongPressStart: (isEdit && (isSelected ?? false))
               ? (LongPressStartDetails details) {
-                  showMenu(
-                    context: context,
-                    position: RelativeRect.fromLTRB(
-                      details.globalPosition.dx,
-                      details.globalPosition.dy,
-                      details.globalPosition.dx,
-                      details.globalPosition.dy,
-                    ),
-                    items: [
-                      PopupMenuItem(
-                        onTap: () {
-                          if (onDelete != null) {
-                            onDelete!(selectedItems);
-                          }
-                        },
-                        child: Row(
-                          children: [
-                            const Icon(Icons.delete, color: Colors.red),
-                            SizedBox(width: 8.w),
-                            const Text('削除'),
-                          ],
-                        ),
-                      ),
-                      PopupMenuItem(
-                        onTap: () async {
-                          // ここでは何もせず、後でダイアログを表示
-                          Future.delayed(Duration.zero, () async {
-                            if (context.mounted) {
-                              await showDialog(
-                                context: context,
-                                builder: (context) => DeckDialog(
-                                  selectedItems: selectedItems,
-                                  unitData: unitData,
-                                  unitId: unitId,
-                                ),
-                              );
-                            }
-                          });
-                        },
-                        child: Row(
-                          children: [
-                            const Icon(Icons.library_books),
-                            SizedBox(width: 8.w),
-                            const Text('デッキ'),
-                          ],
-                        ),
-                      ),
-                    ],
-                  );
+                  showContextMenu(details, context, ref);
                 }
               : null,
           child: InkWell(
@@ -191,52 +249,9 @@ class UnitCard extends ConsumerWidget {
                     }
                   }
                 : () {
-                    editDialog(context);
+                    showEditDialog(context, ref);
                   },
-            child: ListTile(
-              contentPadding: EdgeInsets.symmetric(horizontal: 16.w),
-              leading: isEdit
-                  ? Checkbox(
-                      value: isSelected,
-                      onChanged: onSelect,
-                    )
-                  : Container(
-                      width: 36.w,
-                      height: 36.w,
-                      decoration: const BoxDecoration(
-                        color: Colors.grey,
-                        borderRadius: BorderRadius.zero, // 角を四角く
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        leadingText,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12.sp,
-                        ),
-                      ),
-                    ),
-              title: Text(
-                unitCov(
-                    fromS: '1',
-                    toS: constanceValue,
-                    valueS: input,
-                    scaleOnInfinitePrecisionS: scaleOnInfinitePrecision),
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 16.sp,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              subtitle: Text(
-                title,
-                style: TextStyle(
-                  color: Colors.black54,
-                  fontSize: 12.sp,
-                ),
-              ),
-            ),
+            child: buildListTile(context, ref),
           ),
         ),
       ),

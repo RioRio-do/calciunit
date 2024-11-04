@@ -20,19 +20,27 @@ class AddItemsBottomSheet extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedNewItems = useState<Set<int>>({});
     final searchText = useState('');
-    final availableItems = List.generate(unitData.length, (i) => i)
-        .where((i) => !currentItems.contains(i))
-        .where((i) {
-      final searchLower = searchText.value.toLowerCase();
-      final displayName = unitData[i][UnitsColumn.displayName.v].toLowerCase();
-      final abbreviation =
-          unitData[i][UnitsColumn.abbreviation.v].toLowerCase();
-      final category = unitData[i][UnitsColumn.category.v].toLowerCase();
 
-      return displayName.contains(searchLower) ||
-          abbreviation.contains(searchLower) ||
-          category.contains(searchLower);
-    }).toList();
+    // 検索フィルタリングのロジックを関数に��出
+    List<int> filterAvailableItems(
+        String search, List<int> current, List<List<String>> data) {
+      final searchLower = search.toLowerCase();
+      return List.generate(data.length, (i) => i)
+          .where((i) => !current.contains(i))
+          .where((i) {
+        final displayName = data[i][UnitsColumn.displayName.v].toLowerCase();
+        final abbreviation = data[i][UnitsColumn.abbreviation.v].toLowerCase();
+        final category = data[i][UnitsColumn.category.v].toLowerCase();
+
+        return displayName.contains(searchLower) ||
+            abbreviation.contains(searchLower) ||
+            category.contains(searchLower);
+      }).toList();
+    }
+
+    // buildメソッド内のavailableItemsを更新
+    final availableItems =
+        filterAvailableItems(searchText.value, currentItems, unitData);
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.7,

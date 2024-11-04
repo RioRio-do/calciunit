@@ -1,6 +1,6 @@
+/// 単位のカテゴリー
 enum Units {
-  /// 長さ
-  length,
+  length, // 長さ
 }
 
 /// データを取得する
@@ -22,21 +22,23 @@ extension GetUnitName on Units {
   }
 }
 
+/// カラムの定義
 enum UnitsColumn {
-  category(0),
-  constant(1),
-  abbreviation(2),
-  displayName(3),
+  category(0), // カテゴリ
+  constant(1), // 換算係数
+  abbreviation(2), // 略称
+  displayName(3), // 表示名
   ;
 
   final int v;
   const UnitsColumn(this.v);
 }
 
-/// 長さのデータ
-/// カテゴリ,定数,省略名,表示名
+/// 長さの単位データ
+/// [カテゴリ, 換算係数, 略称, 表示名]
 const List<List<String>> _length = [
-  ['単位', '1', 'm', 'メートル'],
+  // 基本単位
+  ['基本単位', '1', 'm', 'メートル'],
   ['単位', '1e-15', 'fm', 'フェルミ'],
   ['単位', '1e-10', 'Å', 'オングストローム'],
   ['単位', '1e4', '-', 'スカンジナビアマイル'],

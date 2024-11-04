@@ -7,7 +7,7 @@ part of 'model_configuration_notifier.dart';
 // **************************************************************************
 
 String _$modelConfigurationNotifierHash() =>
-    r'4f5b7c4b84afecdb0ad01db96d302bfc6b4ff3ea';
+    r'5a3656eaffa9ef4f5db068260e346b2c723fdeb0';
 
 /// See also [ModelConfigurationNotifier].
 @ProviderFor(ModelConfigurationNotifier)
