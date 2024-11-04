@@ -25,9 +25,23 @@ class DeckDialog extends HookConsumerWidget {
     return AlertDialog(
       shape: _dialogShape(),
       contentPadding: EdgeInsets.all(16.w),
-      title: const Text('デッキを保存'),
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text('デッキを保存'),
+          IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ],
+      ),
       content: _buildContent(nameController, showError),
-      actions: _buildActions(context, ref, nameController, showError),
+      actions: [
+        TextButton(
+          onPressed: () => _handleSave(context, ref, nameController, showError),
+          child: const Text('保存'),
+        ),
+      ],
     );
   }
 
@@ -125,10 +139,6 @@ class DeckDialog extends HookConsumerWidget {
     ValueNotifier<bool> showError,
   ) {
     return [
-      TextButton(
-        onPressed: () => Navigator.of(context).pop(),
-        child: const Text('キャンセル'),
-      ),
       TextButton(
         onPressed: () => _handleSave(context, ref, nameController, showError),
         child: const Text('保存'),

@@ -27,7 +27,16 @@ class CustomUnitDialog extends HookConsumerWidget {
     final formKey = useMemoized(() => GlobalKey<FormState>());
 
     return AlertDialog(
-      title: Text(editUnit == null ? 'カスタム単位の作成' : 'カスタム単位の編集'),
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(editUnit == null ? 'カスタム単位の作成' : 'カスタム単位の編集'),
+          IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ],
+      ),
       content: Form(
         key: formKey,
         child: SingleChildScrollView(
@@ -86,10 +95,45 @@ class CustomUnitDialog extends HookConsumerWidget {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('キャンセル'),
-        ),
+        if (editUnit != null) // 編集モードの場合のみ削除ボタンを表示
+          TextButton(
+            onPressed: () async {
+              // 削除確認ダイアログを表示
+              final bool? shouldDelete = await showDialog<bool>(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('カスタム単位の削除'),
+                  content: const Text('このカスタム単位を削除してもよろしいですか？'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: const Text('キャンセル'),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(true),
+                      child: const Text(
+                        '削除',
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+
+              if (shouldDelete == true) {
+                await ref
+                    .read(customUnitNotifierProvider.notifier)
+                    .deleteUnit(editUnit!.id);
+                if (context.mounted) {
+                  Navigator.of(context).pop();
+                }
+              }
+            },
+            child: const Text(
+              '削除',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
         TextButton(
           onPressed: () async {
             if (!(formKey.currentState?.validate() ?? false)) return;
