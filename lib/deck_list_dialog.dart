@@ -33,18 +33,27 @@ class DeckListDialog extends ConsumerWidget {
         .toList();
 
     return AlertDialog(
-      title: _buildTitle(),
+      title: _buildTitle(context),
       content: _buildContent(context, filteredDecks, ref),
       actions: _buildActions(context),
     );
   }
 
-  Widget _buildTitle() {
+  Widget _buildTitle(BuildContext context) {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Icon(Icons.library_books),
-        SizedBox(width: 8.w),
-        const Text('デッキ一覧'),
+        Row(
+          children: [
+            const Icon(Icons.library_books),
+            SizedBox(width: 8.w),
+            const Text('デッキ一覧'),
+          ],
+        ),
+        IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
       ],
     );
   }
@@ -265,10 +274,6 @@ class DeckListDialog extends ConsumerWidget {
             const Text('デッキを追加'),
           ],
         ),
-      ),
-      TextButton(
-        onPressed: () => Navigator.of(context).pop(),
-        child: const Text('閉じる'),
       ),
     ];
   }

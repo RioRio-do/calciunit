@@ -30,11 +30,9 @@ class AddDeckBottomSheet extends HookConsumerWidget {
         .where((i) {
       final displayName = data[i][UnitsColumn.displayName.v].toLowerCase();
       final abbreviation = data[i][UnitsColumn.abbreviation.v].toLowerCase();
-      final category = data[i][UnitsColumn.category.v].toLowerCase();
 
       return displayName.contains(searchLower) ||
-          abbreviation.contains(searchLower) ||
-          category.contains(searchLower);
+          abbreviation.contains(searchLower);
     }).toList();
   }
 
@@ -52,10 +50,24 @@ class AddDeckBottomSheet extends HookConsumerWidget {
         searchText.value, selectedItems.value.toList(), unitData);
 
     return Container(
-      height: MediaQuery.of(context).size.height * 0.7,
+      height: MediaQuery.of(context).size.height * 0.8,
       padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16.w)),
+      ),
       child: Column(
         children: [
+          // つかみやすい横棒を追加
+          Container(
+            width: 40.w,
+            height: 4.h,
+            margin: EdgeInsets.only(top: 8.h, bottom: 16.h),
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(2.h),
+            ),
+          ),
           Text(
             isEdit ? 'デッキを編集' : 'デッキを追加',
             style: TextStyle(
@@ -131,13 +143,11 @@ class AddDeckBottomSheet extends HookConsumerWidget {
                 final displayName = unitData[index][UnitsColumn.displayName.v];
                 final abbreviation =
                     unitData[index][UnitsColumn.abbreviation.v];
-                final category = unitData[index][UnitsColumn.category.v];
 
                 if (searchText.value.isNotEmpty) {
                   final searchLower = searchText.value.toLowerCase();
                   if (!displayName.toLowerCase().contains(searchLower) &&
-                      !abbreviation.toLowerCase().contains(searchLower) &&
-                      !category.toLowerCase().contains(searchLower)) {
+                      !abbreviation.toLowerCase().contains(searchLower)) {
                     return const SizedBox.shrink();
                   }
                 }
