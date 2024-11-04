@@ -50,10 +50,24 @@ class AddDeckBottomSheet extends HookConsumerWidget {
         searchText.value, selectedItems.value.toList(), unitData);
 
     return Container(
-      height: MediaQuery.of(context).size.height * 0.7,
+      height: MediaQuery.of(context).size.height * 0.8,
       padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16.w)),
+      ),
       child: Column(
         children: [
+          // つかみやすい横棒を追加
+          Container(
+            width: 40.w,
+            height: 4.h,
+            margin: EdgeInsets.only(top: 8.h, bottom: 16.h),
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(2.h),
+            ),
+          ),
           Text(
             isEdit ? 'デッキを編集' : 'デッキを追加',
             style: TextStyle(

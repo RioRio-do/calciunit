@@ -44,10 +44,23 @@ class AddItemsBottomSheet extends HookConsumerWidget {
         filterAvailableItems(searchText.value, currentItems, unitData);
 
     return Container(
-      height: MediaQuery.of(context).size.height * 0.7,
+      height: MediaQuery.of(context).size.height * 0.8,
       padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16.w)),
+      ),
       child: Column(
         children: [
+          Container(
+            width: 40.w,
+            height: 4.h,
+            margin: EdgeInsets.only(top: 8.h, bottom: 16.h),
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(2.h),
+            ),
+          ),
           Row(
             children: [
               Expanded(

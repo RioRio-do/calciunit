@@ -30,7 +30,7 @@ class CustomUnitDialog extends HookConsumerWidget {
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(editUnit == null ? 'カスタム単位の作成' : 'カスタム単位の編集'),
+          const Text('カスタム単位'),
           IconButton(
             icon: const Icon(Icons.close),
             onPressed: () => Navigator.of(context).pop(),
