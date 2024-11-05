@@ -231,26 +231,38 @@ class UnitCard extends ConsumerWidget {
             fontSize: 12.sp,
           ),
         ),
-        trailing: isCustomUnit
-            ? IconButton(
-                icon: const Icon(Icons.edit),
-                onPressed: () {
-                  if (customUnitId != null) {
-                    final customUnit = ref
-                        .read(customUnitNotifierProvider)
-                        .units
-                        .firstWhere((u) => u.id == customUnitId);
-                    showDialog(
-                      context: context,
-                      builder: (context) => CustomUnitDialog(
-                        editUnit: customUnit,
-                        unitType: unitId,
-                      ),
-                    );
-                  }
-                },
-              )
-            : null,
+        trailing: IconButton(
+          icon: const Icon(Icons.edit),
+          onPressed: () {
+            if (isCustomUnit && customUnitId != null) {
+              final customUnit = ref
+                  .read(customUnitNotifierProvider)
+                  .units
+                  .firstWhere((u) => u.id == customUnitId);
+              showDialog(
+                context: context,
+                builder: (context) => CustomUnitDialog(
+                  editUnit: customUnit,
+                  unitType: unitId,
+                ),
+              );
+            } else {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('編集'),
+                  content: const SizedBox.shrink(),
+                  actions: [
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ],
+                ),
+              );
+            }
+          },
+        ),
       );
     }
 
