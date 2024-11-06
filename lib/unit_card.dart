@@ -215,7 +215,7 @@ class UnitCard extends HookConsumerWidget {
                 ),
               ),
         title: Text(
-          prefix.value != null
+          prefix.value == null
               ? convertFromSI(
                   unitCov(
                     fromS: '1',
