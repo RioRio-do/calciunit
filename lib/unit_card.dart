@@ -1,15 +1,17 @@
 import 'package:calciunit/custom_unit_dialog.dart';
+import 'package:calciunit/logic/prefix.dart';
 import 'package:calciunit/sav/model_custom_unit_notifier.dart';
-
+import 'package:calciunit/set_prefix_dialog.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'input_value_state.dart';
 import 'logic/units_cov.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'deck_dialog.dart';
 
-class UnitCard extends ConsumerWidget {
+class UnitCard extends HookConsumerWidget {
   final String title;
   final String leadingText;
   final String constanceValue;
@@ -44,6 +46,7 @@ class UnitCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final input = ref.watch(inputValueProvider);
+    final prefix = useState<Prefix?>(null);
 
     // 編集ダイアログを表示するヘルパーメソッド
     Future<void> showEditDialog(BuildContext context, WidgetRef ref) async {
@@ -212,12 +215,21 @@ class UnitCard extends ConsumerWidget {
                 ),
               ),
         title: Text(
-          unitCov(
-            fromS: '1',
-            toS: constanceValue,
-            valueS: input,
-            scaleOnInfinitePrecisionS: scaleOnInfinitePrecision,
-          ),
+          prefix.value != null
+              ? convertFromSI(
+                  unitCov(
+                    fromS: '1',
+                    toS: constanceValue,
+                    valueS: input,
+                    scaleOnInfinitePrecisionS: scaleOnInfinitePrecision,
+                  ),
+                  prefix.value!)
+              : unitCov(
+                  fromS: '1',
+                  toS: constanceValue,
+                  valueS: input,
+                  scaleOnInfinitePrecisionS: scaleOnInfinitePrecision,
+                ),
           style: TextStyle(
             color: Colors.black,
             fontSize: 16.sp,
@@ -232,34 +244,33 @@ class UnitCard extends ConsumerWidget {
           ),
         ),
         trailing: IconButton(
-          icon: const Icon(Icons.edit),
-          onPressed: () {
+          icon: isCustomUnit
+              ? const Icon(Icons.edit)
+              : const Icon(Icons.autorenew),
+          onPressed: () async {
             if (isCustomUnit && customUnitId != null) {
               final customUnit = ref
                   .read(customUnitNotifierProvider)
                   .units
                   .firstWhere((u) => u.id == customUnitId);
-              showDialog(
+              final result = await showDialog(
                 context: context,
                 builder: (context) => CustomUnitDialog(
                   editUnit: customUnit,
                   unitType: unitId,
                 ),
               );
+              if (result != null) {
+                prefix.value = result;
+              }
             } else {
-              showDialog(
+              final result = await showDialog<Prefix>(
                 context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('編集'),
-                  content: const SizedBox.shrink(),
-                  actions: [
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-                  ],
-                ),
+                builder: (context) => const SetPrefixDialog(),
               );
+              if (result != null) {
+                prefix.value = result;
+              }
             }
           },
         ),

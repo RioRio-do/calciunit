@@ -132,20 +132,6 @@ class DeckDialog extends HookConsumerWidget {
     );
   }
 
-  List<Widget> _buildActions(
-    BuildContext context,
-    WidgetRef ref,
-    TextEditingController nameController,
-    ValueNotifier<bool> showError,
-  ) {
-    return [
-      TextButton(
-        onPressed: () => _handleSave(context, ref, nameController, showError),
-        child: const Text('保存'),
-      ),
-    ];
-  }
-
   Future<void> _handleSave(
     BuildContext context,
     WidgetRef ref,
