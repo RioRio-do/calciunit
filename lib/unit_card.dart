@@ -22,7 +22,7 @@ class UnitCard extends HookConsumerWidget {
   final Function(bool?)? onSelect;
   final Function(Set<int>)? onDelete;
   final List<List<String>> unitData;
-  final int unitId; // 追加
+  final int unitId;
   final bool isCustomUnit;
   final String? customUnitId;
 
@@ -38,7 +38,7 @@ class UnitCard extends HookConsumerWidget {
     this.onSelect,
     this.onDelete,
     required this.unitData,
-    required this.unitId, // 追加
+    required this.unitId,
     this.isCustomUnit = false,
     this.customUnitId,
   });
@@ -46,17 +46,22 @@ class UnitCard extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final input = ref.watch(inputValueProvider);
-    final prefix = useState<Prefix?>(null);
+    final prefix = useState<Prefix>(Prefix.none);
+    final output = convertToPrefix(
+      unitCov(
+        fromS: '1',
+        toS: constanceValue,
+        valueS: input,
+        scaleOnInfinitePrecisionS: scaleOnInfinitePrecision,
+      ),
+      prefix.value,
+      scaleOnInfinitePrecision,
+    );
 
     // 編集ダイアログを表示するヘルパーメソッド
     Future<void> showEditDialog(BuildContext context, WidgetRef ref) async {
       final TextEditingController controller = TextEditingController(
-        text: unitCov(
-          fromS: '1',
-          toS: constanceValue,
-          valueS: input,
-          scaleOnInfinitePrecisionS: scaleOnInfinitePrecision,
-        ),
+        text: output,
       );
       FocusNode focusNode = FocusNode();
       controller.selection = TextSelection(
@@ -90,13 +95,7 @@ class UnitCard extends HookConsumerWidget {
                       TextButton(
                         onPressed: () {
                           Clipboard.setData(ClipboardData(
-                            text: unitCov(
-                              fromS: '1',
-                              toS: constanceValue,
-                              valueS: input,
-                              scaleOnInfinitePrecisionS:
-                                  scaleOnInfinitePrecision,
-                            ),
+                            text: '$output${prefix.value.siSymbol}',
                           ));
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text('クリップボードにコピーされました')),
@@ -112,12 +111,15 @@ class UnitCard extends HookConsumerWidget {
                       ),
                       TextButton(
                         onPressed: () {
-                          String? newValue = unitCov(
-                            fromS: constanceValue,
-                            toS: '1',
-                            valueS: controller.text,
-                            scaleOnInfinitePrecisionS: scaleOnInfinitePrecision,
-                          );
+                          String? newValue = convertFromPrefix(
+                              unitCov(
+                                fromS: constanceValue,
+                                toS: '1',
+                                valueS: controller.text,
+                                scaleOnInfinitePrecisionS:
+                                    scaleOnInfinitePrecision,
+                              ),
+                              prefix.value);
                           ref.read(inputValueProvider.notifier).set(newValue);
                           Navigator.of(context).pop();
                         },
@@ -206,7 +208,7 @@ class UnitCard extends HookConsumerWidget {
                 ),
                 alignment: Alignment.center,
                 child: Text(
-                  leadingText,
+                  '${prefix.value.siSymbol}$leadingText',
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -215,21 +217,7 @@ class UnitCard extends HookConsumerWidget {
                 ),
               ),
         title: Text(
-          prefix.value == null
-              ? convertFromSI(
-                  unitCov(
-                    fromS: '1',
-                    toS: constanceValue,
-                    valueS: input,
-                    scaleOnInfinitePrecisionS: scaleOnInfinitePrecision,
-                  ),
-                  prefix.value!)
-              : unitCov(
-                  fromS: '1',
-                  toS: constanceValue,
-                  valueS: input,
-                  scaleOnInfinitePrecisionS: scaleOnInfinitePrecision,
-                ),
+          output,
           style: TextStyle(
             color: Colors.black,
             fontSize: 16.sp,
@@ -237,7 +225,7 @@ class UnitCard extends HookConsumerWidget {
           ),
         ),
         subtitle: Text(
-          title,
+          '${prefix.value.siName}$title',
           style: TextStyle(
             color: Colors.black54,
             fontSize: 12.sp,
@@ -281,7 +269,7 @@ class UnitCard extends HookConsumerWidget {
       padding: EdgeInsets.all(8.w),
       child: Material(
         elevation: 1.w,
-        borderRadius: BorderRadius.zero, // 角を四角く
+        borderRadius: BorderRadius.zero,
         color:
             (isEdit && (isSelected ?? false)) ? Colors.blue[50] : Colors.white,
         child: GestureDetector(
@@ -291,7 +279,7 @@ class UnitCard extends HookConsumerWidget {
                 }
               : null,
           child: InkWell(
-            borderRadius: BorderRadius.zero, // 角を四角く
+            borderRadius: BorderRadius.zero,
             onTap: isEdit
                 ? () {
                     if (onSelect != null) {

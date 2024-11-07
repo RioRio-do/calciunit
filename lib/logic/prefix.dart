@@ -15,7 +15,7 @@ enum Prefix {
   k('1e3', 'キロ', 'k'),
   h('1e2', 'ヘクト', 'h'),
   da('1e1', 'デカ', 'da'),
-  none('1', 'なし', '-'),
+  none('1', '', ''),
   d('1e-1', 'デシ', 'd'),
   c('1e-2', 'センチ', 'c'),
   m('1e-3', 'ミリ', 'm'),
@@ -50,12 +50,12 @@ enum Prefix {
 }
 
 /// SI単位から変換
-String convertFromSI(String number, Prefix prefix) {
+String convertFromPrefix(String number, Prefix prefix) {
   return (Decimal.parse(number) * Decimal.parse(prefix.value)).toString();
 }
 
 /// SI単位へ変換
-String convertToSI(
+String convertToPrefix(
     String number, Prefix prefix, String scaleOnInfinitePrecisionS) {
   return (Decimal.parse(number) / Decimal.parse(prefix.value))
       .toDecimal(

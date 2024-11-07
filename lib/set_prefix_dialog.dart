@@ -10,35 +10,43 @@ class SetPrefixDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: SizedBox(
-        width: double.infinity,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text('接頭辞変換'),
-            IconButton(
-              icon: const Icon(Icons.close),
-              onPressed: () => Navigator.of(context).pop(null), // nullを返す
-            ),
-          ],
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text('接頭辞変換'),
+          IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: () => Navigator.of(context).pop(null),
+          ),
+        ],
+      ),
+      content: SizedBox(
+        width: 300.w,
+        height: 400.h,
+        child: Scrollbar(
+          child: ListView.builder(
+            itemBuilder: (context, index) {
+              return ListTile(
+                title: Text(
+                    Prefix.values[index].siName == ''
+                        ? 'なし'
+                        : Prefix.values[index].siName,
+                    style: TextStyle(fontSize: 16.w)),
+                trailing: Text(
+                    Prefix.values[index].siSymbol == ''
+                        ? '-'
+                        : Prefix.values[index].siSymbol,
+                    style: TextStyle(fontSize: 24.w)),
+                onTap: () {
+                  Navigator.of(context).pop(Prefix.values[index]);
+                },
+              );
+            },
+            itemCount: Prefix.values.length,
+            shrinkWrap: true,
+          ),
         ),
       ),
-      content: ListView.builder(
-        itemBuilder: (context, index) {
-          return ListTile(
-            title: Text(Prefix.values[index].siName,
-                style: TextStyle(fontSize: 16.w)),
-            trailing: Text(Prefix.values[index].siSymbol,
-                style: TextStyle(fontSize: 24.w)),
-            onTap: () {
-              Navigator.of(context).pop(Prefix.values[index]); // 選択したPrefixを返す
-            },
-          );
-        },
-        itemCount: Prefix.values.length,
-        shrinkWrap: true,
-      ),
-      actions: const [],
     );
   }
 }
