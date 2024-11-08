@@ -270,8 +270,11 @@ class UnitCard extends HookConsumerWidget {
       child: Material(
         elevation: 1.w,
         borderRadius: BorderRadius.zero,
-        color:
-            (isEdit && (isSelected ?? false)) ? Colors.blue[50] : Colors.white,
+        color: isCustomUnit
+            ? Colors.green[50]
+            : (isEdit && (isSelected ?? false))
+                ? Colors.blue[50]
+                : Colors.white,
         child: GestureDetector(
           onLongPressStart: (isEdit && (isSelected ?? false))
               ? (LongPressStartDetails details) {
