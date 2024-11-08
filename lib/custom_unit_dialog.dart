@@ -49,10 +49,14 @@ class CustomUnitDialog extends HookConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextFormField(
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                  signed: false,
+                ),
                 controller: constantController,
                 decoration: const InputDecoration(
                   labelText: '換算係数',
-                  hintText: '1つで何mなのかを数値で入力してください',
+                  hintText: '1つで何mなのかを入力してください',
                 ),
                 validator: (value) {
                   if (value?.isEmpty ?? true) return '換算係数を入力してください';
@@ -67,20 +71,8 @@ class CustomUnitDialog extends HookConsumerWidget {
                     }
                     return null;
                   } catch (e) {
-                    return '有効な数値または分数を入力してください';
+                    return '有効な数値を入力してください';
                   }
-                },
-              ),
-              SizedBox(height: 8.h),
-              TextFormField(
-                controller: abbreviationController,
-                decoration: const InputDecoration(
-                  labelText: '略称',
-                  hintText: '記号、略称を半角4文字以内で入力してください',
-                ),
-                validator: (value) {
-                  if (value?.isEmpty ?? true) return '略称を入力してください';
-                  return null;
                 },
               ),
               SizedBox(height: 8.h),
@@ -88,7 +80,7 @@ class CustomUnitDialog extends HookConsumerWidget {
                 controller: displayNameController,
                 decoration: const InputDecoration(
                   labelText: '表示名',
-                  hintText: '名前を簡潔に文字列で入力してください',
+                  hintText: '名前を簡潔に入力してください',
                 ),
                 validator: (value) {
                   if (value?.isEmpty ?? true) return '表示名を入力してください';
@@ -149,7 +141,7 @@ class CustomUnitDialog extends HookConsumerWidget {
             if (editUnit == null) {
               await customUnitNotifier.addUnit(
                 constant: constantController.text,
-                abbreviation: abbreviationController.text,
+                abbreviation: '！',
                 displayName: displayNameController.text,
                 unitType: unitType,
               );
