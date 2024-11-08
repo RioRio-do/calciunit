@@ -3,7 +3,6 @@ import 'package:calciunit/app_route.dart';
 import 'package:calciunit/logic/data.dart';
 import 'package:calciunit/logic/units_data_provider.dart';
 import 'package:calciunit/sav/model_configuration_notifier.dart';
-import 'package:calciunit/sav/model_custom_unit_notifier.dart';
 import 'package:calciunit/unit_card.dart';
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
@@ -172,11 +171,6 @@ class AppPage extends HookConsumerWidget {
               },
               selectedItems: selectedItems.value,
               onDelete: (selectedIndices) {
-                if (isCustom && customUnitId != null) {
-                  ref
-                      .read(customUnitNotifierProvider.notifier)
-                      .deleteUnit(customUnitId);
-                }
                 items.value = items.value
                     .where((item) => !selectedIndices.contains(item))
                     .toList();
