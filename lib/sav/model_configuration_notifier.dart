@@ -1,6 +1,9 @@
-import 'model_configuration.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+// Package imports:
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+// Project imports:
+import 'model_configuration.dart';
 
 part 'model_configuration_notifier.g.dart';
 

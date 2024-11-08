@@ -1,7 +1,4 @@
 // Flutter imports:
-import 'package:calciunit/page/app_page.dart';
-
-import 'page/setting_page.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -9,7 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 // Project imports:
+import 'package:calciunit/page/app_page.dart';
 import 'app_route.dart';
+import 'page/setting_page.dart';
 
 // 共通のトランジションビルダー関数を追加
 Widget _buildTransition(BuildContext context, Animation<double> animation,

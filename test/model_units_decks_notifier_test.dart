@@ -1,7 +1,10 @@
+// Package imports:
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:calciunit/sav/model_units_decks_notifier.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+// Project imports:
+import 'package:calciunit/sav/model_units_decks_notifier.dart';
 
 void main() {
   group('ModelUnitsDecksNotifier Tests', () {

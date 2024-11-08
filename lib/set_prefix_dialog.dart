@@ -1,6 +1,11 @@
-import 'package:calciunit/logic/prefix.dart';
+// Flutter imports:
 import 'package:flutter/material.dart';
+
+// Package imports:
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+
+// Project imports:
+import 'package:calciunit/logic/prefix.dart';
 
 class SetPrefixDialog extends StatelessWidget {
   const SetPrefixDialog({

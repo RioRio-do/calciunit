@@ -1,7 +1,12 @@
+// Dart imports:
 import 'dart:convert';
-import 'model_units_decks.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
+// Package imports:
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+// Project imports:
+import 'model_units_decks.dart';
 
 part 'model_units_decks_notifier.g.dart';
 
