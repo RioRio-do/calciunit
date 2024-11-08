@@ -22,22 +22,21 @@ class AppPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final unit = Units.values[0]; // 固定値に変更
+    // 初期設定
+    final unit = Units.values[0];
     final items = useState<List<int>>([0]);
     final isEdit = useState(false);
     final selectedItems = useState<Set<int>>({});
     final scrollController = useScrollController();
     final config = ref.watch(modelConfigurationNotifierProvider);
-    final unitData = ref.watch(unitsDataNotifierProvider(0)); // 固定値に変更
+    final unitData = ref.watch(unitsDataNotifierProvider(0));
 
-    // デッキアイテムを追加するメソッドの最適化
+    // デッキアイテムを追加する関数
     void addDeckItems(List<int> deckItems) {
       final currentItems = items.value.toList();
 
-      // 重複するアイテムを削除
       currentItems.removeWhere((item) => deckItems.contains(item));
 
-      // 挿入位置を決定
       int insertPosition = currentItems.length;
       for (final item in deckItems.reversed) {
         final index = currentItems.indexOf(item);
@@ -46,11 +45,7 @@ class AppPage extends HookConsumerWidget {
           break;
         }
       }
-
-      // アイテムを挿入
       currentItems.insertAll(insertPosition, deckItems);
-
-      // 重複を除去して状態を更新
       items.value = currentItems.toSet().toList();
     }
 
@@ -65,17 +60,20 @@ class AppPage extends HookConsumerWidget {
       body: CustomScrollView(
         controller: scrollController,
         slivers: [
+          // アプリバーを構築
           _buildAppBar(
               unit, isEdit, items, selectedItems, context, addDeckItems),
+          // 並べ替え可能なリストを構築
           _buildReorderableList(
-              unitData, items, isEdit, selectedItems, config, ref), // 更新
-          _buildAddItemButton(context, isEdit, unitData, items), // 更新
+              unitData, items, isEdit, selectedItems, config, ref),
+          // アイテム追加ボタンを構築
+          _buildAddItemButton(context, isEdit, unitData, items),
         ],
       ),
     );
   }
 
-  // アプリバーを構築するヘルパーメソッド
+  // アプリバーを構築する関数
   SliverAppBar _buildAppBar(
     Units unit,
     ValueNotifier<bool> isEdit,
@@ -104,7 +102,7 @@ class AppPage extends HookConsumerWidget {
             showDialog(
               context: context,
               builder: (context) => DeckListDialog(
-                unitId: 0, // 固定値に変更
+                unitId: 0,
                 onDeckSelect: addDeckItems,
               ),
             );
@@ -115,7 +113,7 @@ class AppPage extends HookConsumerWidget {
     );
   }
 
-  // 設定ボタン
+  // 設定ボタンを構築する関数
   Widget _buildSettingsButton(BuildContext context) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 8.w),
@@ -130,17 +128,16 @@ class AppPage extends HookConsumerWidget {
     );
   }
 
-  // リオーダブルリストを構築するヘルパーメソッドを更新
+  // 並べ替え可能なリストを構築する関数
   SliverReorderableList _buildReorderableList(
-    List<List<String>> unitData, // 更新
+    List<List<String>> unitData,
     ValueNotifier<List<int>> items,
     ValueNotifier<bool> isEdit,
     ValueNotifier<Set<int>> selectedItems,
     dynamic config,
-    WidgetRef ref, // 追加
+    WidgetRef ref,
   ) {
-    final unitsDataNotifier =
-        ref.read(unitsDataNotifierProvider(0).notifier); // 固定値に変更
+    final unitsDataNotifier = ref.read(unitsDataNotifierProvider(0).notifier);
 
     return SliverReorderableList(
       itemBuilder: (BuildContext context, int index) {
@@ -175,7 +172,6 @@ class AppPage extends HookConsumerWidget {
               },
               selectedItems: selectedItems.value,
               onDelete: (selectedIndices) {
-                // カスタム単位の場合は、完全に削除する
                 if (isCustom && customUnitId != null) {
                   ref
                       .read(customUnitNotifierProvider.notifier)
@@ -187,10 +183,10 @@ class AppPage extends HookConsumerWidget {
                 selectedItems.value = {};
                 isEdit.value = false;
               },
-              isCustomUnit: isCustom, // 追加
-              customUnitId: customUnitId, // 追加
+              isCustomUnit: isCustom,
+              customUnitId: customUnitId,
               unitData: unitData,
-              unitId: 0, // 固定値に変更
+              unitId: 0,
             ),
           ),
         );
@@ -206,11 +202,11 @@ class AppPage extends HookConsumerWidget {
     );
   }
 
-  // アイテム追加ボタンを構築するヘルパーメソッドを更新
+  // アイテム追加ボタンを構築する関数
   SliverToBoxAdapter _buildAddItemButton(
     BuildContext context,
     ValueNotifier<bool> isEdit,
-    List<List<String>> unitData, // 更新
+    List<List<String>> unitData,
     ValueNotifier<List<int>> items,
   ) {
     return SliverToBoxAdapter(
@@ -233,7 +229,7 @@ class AppPage extends HookConsumerWidget {
                         onAdd: (newItems) {
                           items.value = [...items.value, ...newItems];
                         },
-                        pageId: 0, // 固定値に変更
+                        pageId: 0,
                       );
                     },
                   );
@@ -260,7 +256,7 @@ class AppPage extends HookConsumerWidget {
   }
 }
 
-// データフォーマット用ユーティリティ関数
+// データをフォーマットする関数
 String dataFormatting(String data, String scaleOnInfinitePrecision) {
   if (data.contains('/')) {
     final parts = data.split('/');
