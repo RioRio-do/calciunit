@@ -18,8 +18,8 @@ class App extends ConsumerWidget {
     final goRouter = ref.watch(goRouterProvider);
     return MaterialApp.router(
       theme: ThemeData(
-          useMaterial3: true,
           fontFamily: 'Noto_Sans_JP',
+          useMaterial3: true,
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueGrey)),
       debugShowCheckedModeBanner: false,
       localizationsDelegates: const [

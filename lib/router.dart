@@ -1,4 +1,6 @@
 // Flutter imports:
+import 'package:calciunit/page/app_page.dart';
+
 import 'page/setting_page.dart';
 import 'package:flutter/material.dart';
 
@@ -7,9 +9,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 // Project imports:
-import 'logic/data.dart';
-import 'page/menu_page.dart';
-import 'page/dynamic_page.dart';
 import 'app_route.dart';
 
 // 共通のトランジションビルダー関数を追加
@@ -43,21 +42,6 @@ CustomTransitionPage _createTransitionPage(Widget child, Offset beginOffset) {
   );
 }
 
-List<GoRoute> generateRoutes(int count) {
-  return List.generate(
-    count,
-    (index) {
-      return GoRoute(
-        path: '$index',
-        pageBuilder: (context, state) {
-          return _createTransitionPage(
-              DynamicPage(pageId: index), const Offset(1.0, 0.0));
-        },
-      );
-    },
-  );
-}
-
 final goRouterProvider = Provider<GoRouter>(
   (ref) {
     return GoRouter(
@@ -68,7 +52,7 @@ final goRouterProvider = Provider<GoRouter>(
           name: AppRoute.menu.name,
           pageBuilder: (context, state) {
             return _createTransitionPage(
-                const MenuPage(), const Offset(-1.0, 0.0));
+                const AppPage(), const Offset(-1.0, 0.0));
           },
           routes: [
             GoRoute(
@@ -78,7 +62,6 @@ final goRouterProvider = Provider<GoRouter>(
                 return const SettingPage();
               },
             ),
-            ...generateRoutes(Units.values.length),
           ],
         ),
       ],

@@ -1,4 +1,5 @@
 import 'package:calciunit/add_item_bottom_sheet.dart';
+import 'package:calciunit/app_route.dart';
 import 'package:calciunit/logic/data.dart';
 import 'package:calciunit/logic/units_data_provider.dart';
 import 'package:calciunit/sav/model_configuration_notifier.dart';
@@ -6,26 +7,28 @@ import 'package:calciunit/sav/model_custom_unit_notifier.dart';
 import 'package:calciunit/unit_card.dart';
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:rational/rational.dart';
 import 'package:calciunit/deck_list_dialog.dart';
 
-class DynamicPage extends HookConsumerWidget {
-  const DynamicPage({super.key, required this.pageId});
+class AppPage extends HookConsumerWidget {
+  const AppPage({super.key});
 
-  final int pageId;
+  static const double _iconSize = 28.0;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final unit = Units.values[pageId];
+    final unit = Units.values[0]; // 固定値に変更
     final items = useState<List<int>>([0]);
     final isEdit = useState(false);
     final selectedItems = useState<Set<int>>({});
     final scrollController = useScrollController();
     final config = ref.watch(modelConfigurationNotifierProvider);
-    final unitData = ref.watch(unitsDataNotifierProvider(pageId)); // 追加
+    final unitData = ref.watch(unitsDataNotifierProvider(0)); // 固定値に変更
 
     // デッキアイテムを追加するメソッドの最適化
     void addDeckItems(List<int> deckItems) {
@@ -82,7 +85,7 @@ class DynamicPage extends HookConsumerWidget {
     Function(List<int>) addDeckItems,
   ) {
     return SliverAppBar(
-      title: Text(unit.name),
+      title: const Text('Calciunit'),
       floating: true,
       snap: true,
       actions: [
@@ -101,13 +104,29 @@ class DynamicPage extends HookConsumerWidget {
             showDialog(
               context: context,
               builder: (context) => DeckListDialog(
-                unitId: pageId,
+                unitId: 0, // 固定値に変更
                 onDeckSelect: addDeckItems,
               ),
             );
           },
         ),
+        _buildSettingsButton(context)
       ],
+    );
+  }
+
+  // 設定ボタン
+  Widget _buildSettingsButton(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 8.w),
+      child: IconButton(
+        icon: Icon(Icons.settings, size: _iconSize.w),
+        style: IconButton.styleFrom(minimumSize: Size(48.w, 48.h)),
+        onPressed: () {
+          HapticFeedback.lightImpact();
+          GoRouter.of(context).go(AppRoute.config.path);
+        },
+      ),
     );
   }
 
@@ -121,7 +140,7 @@ class DynamicPage extends HookConsumerWidget {
     WidgetRef ref, // 追加
   ) {
     final unitsDataNotifier =
-        ref.read(unitsDataNotifierProvider(pageId).notifier);
+        ref.read(unitsDataNotifierProvider(0).notifier); // 固定値に変更
 
     return SliverReorderableList(
       itemBuilder: (BuildContext context, int index) {
@@ -171,7 +190,7 @@ class DynamicPage extends HookConsumerWidget {
               isCustomUnit: isCustom, // 追加
               customUnitId: customUnitId, // 追加
               unitData: unitData,
-              unitId: pageId,
+              unitId: 0, // 固定値に変更
             ),
           ),
         );
@@ -214,7 +233,7 @@ class DynamicPage extends HookConsumerWidget {
                         onAdd: (newItems) {
                           items.value = [...items.value, ...newItems];
                         },
-                        pageId: pageId, // 追加
+                        pageId: 0, // 固定値に変更
                       );
                     },
                   );
