@@ -64,18 +64,6 @@ class CustomUnitNotifier extends _$CustomUnitNotifier {
     await _saveUnits();
   }
 
-  Future<void> toggleFavorite(String id) async {
-    final updatedUnits = state.units.map((u) {
-      if (u.id == id) {
-        return u.copyWith(isFavorite: !u.isFavorite);
-      }
-      return u;
-    }).toList();
-
-    state = CustomUnits(units: updatedUnits);
-    await _saveUnits();
-  }
-
   List<CustomUnit> getUnitsByType(int unitType) {
     return state.units.where((u) => u.unitType == unitType).toList();
   }

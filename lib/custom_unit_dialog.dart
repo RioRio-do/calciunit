@@ -47,7 +47,7 @@ class CustomUnitDialog extends HookConsumerWidget {
                 controller: constantController,
                 decoration: const InputDecoration(
                   labelText: '換算係数',
-                  hintText: '例: 1000 または 1/1000',
+                  hintText: '1つで何mなのかを数値で入力してください',
                 ),
                 validator: (value) {
                   if (value?.isEmpty ?? true) return '換算係数を入力してください';
@@ -71,7 +71,7 @@ class CustomUnitDialog extends HookConsumerWidget {
                 controller: abbreviationController,
                 decoration: const InputDecoration(
                   labelText: '略称',
-                  hintText: '例: km',
+                  hintText: '記号、略称を半角4文字以内で入力してください',
                 ),
                 validator: (value) {
                   if (value?.isEmpty ?? true) return '略称を入力してください';
@@ -83,7 +83,7 @@ class CustomUnitDialog extends HookConsumerWidget {
                 controller: displayNameController,
                 decoration: const InputDecoration(
                   labelText: '表示名',
-                  hintText: '例: キロメートル',
+                  hintText: '名前を簡潔に文字列で入力してください',
                 ),
                 validator: (value) {
                   if (value?.isEmpty ?? true) return '表示名を入力してください';

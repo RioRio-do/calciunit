@@ -11,7 +11,6 @@ class CustomUnit with _$CustomUnit {
     required String abbreviation,
     required String displayName,
     @Default(0) int unitType, // どの単位系(長さ、重さなど)に属するか
-    @Default(false) bool isFavorite,
   }) = _CustomUnit;
 
   factory CustomUnit.fromJson(Map<String, dynamic> json) =>

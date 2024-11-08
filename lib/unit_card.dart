@@ -1,15 +1,17 @@
 import 'package:calciunit/custom_unit_dialog.dart';
+import 'package:calciunit/logic/prefix.dart';
 import 'package:calciunit/sav/model_custom_unit_notifier.dart';
-
+import 'package:calciunit/set_prefix_dialog.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'input_value_state.dart';
 import 'logic/units_cov.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'deck_dialog.dart';
 
-class UnitCard extends ConsumerWidget {
+class UnitCard extends HookConsumerWidget {
   final String title;
   final String leadingText;
   final String constanceValue;
@@ -20,7 +22,7 @@ class UnitCard extends ConsumerWidget {
   final Function(bool?)? onSelect;
   final Function(Set<int>)? onDelete;
   final List<List<String>> unitData;
-  final int unitId; // 追加
+  final int unitId;
   final bool isCustomUnit;
   final String? customUnitId;
 
@@ -36,7 +38,7 @@ class UnitCard extends ConsumerWidget {
     this.onSelect,
     this.onDelete,
     required this.unitData,
-    required this.unitId, // 追加
+    required this.unitId,
     this.isCustomUnit = false,
     this.customUnitId,
   });
@@ -44,16 +46,22 @@ class UnitCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final input = ref.watch(inputValueProvider);
+    final prefix = useState<Prefix>(Prefix.none);
+    final output = convertToPrefix(
+      unitCov(
+        fromS: '1',
+        toS: constanceValue,
+        valueS: input,
+        scaleOnInfinitePrecisionS: scaleOnInfinitePrecision,
+      ),
+      prefix.value,
+      scaleOnInfinitePrecision,
+    );
 
     // 編集ダイアログを表示するヘルパーメソッド
     Future<void> showEditDialog(BuildContext context, WidgetRef ref) async {
       final TextEditingController controller = TextEditingController(
-        text: unitCov(
-          fromS: '1',
-          toS: constanceValue,
-          valueS: input,
-          scaleOnInfinitePrecisionS: scaleOnInfinitePrecision,
-        ),
+        text: output,
       );
       FocusNode focusNode = FocusNode();
       controller.selection = TextSelection(
@@ -87,13 +95,7 @@ class UnitCard extends ConsumerWidget {
                       TextButton(
                         onPressed: () {
                           Clipboard.setData(ClipboardData(
-                            text: unitCov(
-                              fromS: '1',
-                              toS: constanceValue,
-                              valueS: input,
-                              scaleOnInfinitePrecisionS:
-                                  scaleOnInfinitePrecision,
-                            ),
+                            text: '$output${prefix.value.siSymbol}',
                           ));
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text('クリップボードにコピーされました')),
@@ -109,12 +111,15 @@ class UnitCard extends ConsumerWidget {
                       ),
                       TextButton(
                         onPressed: () {
-                          String? newValue = unitCov(
-                            fromS: constanceValue,
-                            toS: '1',
-                            valueS: controller.text,
-                            scaleOnInfinitePrecisionS: scaleOnInfinitePrecision,
-                          );
+                          String? newValue = convertFromPrefix(
+                              unitCov(
+                                fromS: constanceValue,
+                                toS: '1',
+                                valueS: controller.text,
+                                scaleOnInfinitePrecisionS:
+                                    scaleOnInfinitePrecision,
+                              ),
+                              prefix.value);
                           ref.read(inputValueProvider.notifier).set(newValue);
                           Navigator.of(context).pop();
                         },
@@ -203,7 +208,7 @@ class UnitCard extends ConsumerWidget {
                 ),
                 alignment: Alignment.center,
                 child: Text(
-                  leadingText,
+                  '${prefix.value.siSymbol}$leadingText',
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -212,12 +217,7 @@ class UnitCard extends ConsumerWidget {
                 ),
               ),
         title: Text(
-          unitCov(
-            fromS: '1',
-            toS: constanceValue,
-            valueS: input,
-            scaleOnInfinitePrecisionS: scaleOnInfinitePrecision,
-          ),
+          output,
           style: TextStyle(
             color: Colors.black,
             fontSize: 16.sp,
@@ -225,32 +225,43 @@ class UnitCard extends ConsumerWidget {
           ),
         ),
         subtitle: Text(
-          title,
+          '${prefix.value.siName}$title',
           style: TextStyle(
             color: Colors.black54,
             fontSize: 12.sp,
           ),
         ),
-        trailing: isCustomUnit
-            ? IconButton(
-                icon: const Icon(Icons.edit),
-                onPressed: () {
-                  if (customUnitId != null) {
-                    final customUnit = ref
-                        .read(customUnitNotifierProvider)
-                        .units
-                        .firstWhere((u) => u.id == customUnitId);
-                    showDialog(
-                      context: context,
-                      builder: (context) => CustomUnitDialog(
-                        editUnit: customUnit,
-                        unitType: unitId,
-                      ),
-                    );
-                  }
-                },
-              )
-            : null,
+        trailing: IconButton(
+          icon: isCustomUnit
+              ? const Icon(Icons.edit)
+              : const Icon(Icons.autorenew),
+          onPressed: () async {
+            if (isCustomUnit && customUnitId != null) {
+              final customUnit = ref
+                  .read(customUnitNotifierProvider)
+                  .units
+                  .firstWhere((u) => u.id == customUnitId);
+              final result = await showDialog(
+                context: context,
+                builder: (context) => CustomUnitDialog(
+                  editUnit: customUnit,
+                  unitType: unitId,
+                ),
+              );
+              if (result != null) {
+                prefix.value = result;
+              }
+            } else {
+              final result = await showDialog<Prefix>(
+                context: context,
+                builder: (context) => const SetPrefixDialog(),
+              );
+              if (result != null) {
+                prefix.value = result;
+              }
+            }
+          },
+        ),
       );
     }
 
@@ -258,9 +269,12 @@ class UnitCard extends ConsumerWidget {
       padding: EdgeInsets.all(8.w),
       child: Material(
         elevation: 1.w,
-        borderRadius: BorderRadius.zero, // 角を四角く
-        color:
-            (isEdit && (isSelected ?? false)) ? Colors.blue[50] : Colors.white,
+        borderRadius: BorderRadius.zero,
+        color: isCustomUnit
+            ? Colors.green[50]
+            : (isEdit && (isSelected ?? false))
+                ? Colors.blue[50]
+                : Colors.white,
         child: GestureDetector(
           onLongPressStart: (isEdit && (isSelected ?? false))
               ? (LongPressStartDetails details) {
@@ -268,7 +282,7 @@ class UnitCard extends ConsumerWidget {
                 }
               : null,
           child: InkWell(
-            borderRadius: BorderRadius.zero, // 角を四角く
+            borderRadius: BorderRadius.zero,
             onTap: isEdit
                 ? () {
                     if (onSelect != null) {
