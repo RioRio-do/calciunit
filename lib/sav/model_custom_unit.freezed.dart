@@ -249,8 +249,7 @@ abstract class _CustomUnit implements CustomUnit {
       required final String constant,
       required final String abbreviation,
       required final String displayName,
-      final int unitType,
-      final bool isFavorite}) = _$CustomUnitImpl;
+      final int unitType}) = _$CustomUnitImpl;
 
   factory _CustomUnit.fromJson(Map<String, dynamic> json) =
       _$CustomUnitImpl.fromJson;
